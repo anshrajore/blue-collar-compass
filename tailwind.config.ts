@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,36 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+        // NayiDisha custom colors
+        nayidisha: {
+          blue: {
+            DEFAULT: '#0F5888',
+            50: '#E6F0F7',
+            100: '#CCE1EF',
+            200: '#99C3DF',
+            300: '#66A5CF',
+            400: '#3387BF',
+            500: '#0F5888',
+            600: '#0C466D',
+            700: '#093552',
+            800: '#062336',
+            900: '#03121B',
+          },
+          orange: {
+            DEFAULT: '#FF7F32',
+            50: '#FFF1E8',
+            100: '#FFE3D1',
+            200: '#FFC7A3',
+            300: '#FFAB75',
+            400: '#FF8F47',
+            500: '#FF7F32',
+            600: '#FF5F00',
+            700: '#CC4C00',
+            800: '#993900',
+            900: '#662600',
+          },
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -70,25 +100,27 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
-				}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        'pulse-light': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' }
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-in': 'fade-in 0.5s ease-out',
+        'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
 			}
 		}
 	},
