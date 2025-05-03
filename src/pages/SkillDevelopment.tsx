@@ -1,357 +1,446 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChevronRight, Clock, Filter, Play, Search, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-const courses = [
-  {
-    id: 1,
-    title: "Basic Electrical Wiring",
-    provider: "NSDC Learning",
-    level: "Beginner",
-    duration: "20 hours",
-    rating: 4.8,
-    students: 15420,
-    image: "https://images.unsplash.com/photo-1555963966-b7ae5404b6ed",
-    tags: ["Electrical", "Popular", "Free"]
-  },
-  {
-    id: 2,
-    title: "Advanced Plumbing Techniques",
-    provider: "Skill India",
-    level: "Intermediate",
-    duration: "15 hours",
-    rating: 4.7,
-    students: 8320,
-    image: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39",
-    tags: ["Plumbing", "Certification"]
-  },
-  {
-    id: 3,
-    title: "Carpentry Masterclass",
-    provider: "Woodcraft Academy",
-    level: "Advanced",
-    duration: "25 hours",
-    rating: 4.9,
-    students: 7150,
-    image: "https://images.unsplash.com/photo-1502301103665-0b95a4e17bfd",
-    tags: ["Carpentry", "Trending"]
-  },
-  {
-    id: 4,
-    title: "Industrial Safety Standards",
-    provider: "SafetyFirst Institute",
-    level: "All Levels",
-    duration: "10 hours",
-    rating: 4.6,
-    students: 12800,
-    image: "https://images.unsplash.com/photo-1531984557360-89184e00f590",
-    tags: ["Safety", "Certificate", "Mandatory"]
-  },
-  {
-    id: 5,
-    title: "Welding Fundamentals",
-    provider: "MetalWorks Training",
-    level: "Beginner",
-    duration: "18 hours",
-    rating: 4.7,
-    students: 9240,
-    image: "https://images.unsplash.com/photo-1566437936382-c63cc03b6d18",
-    tags: ["Welding", "Hands-on"]
-  },
-  {
-    id: 6,
-    title: "Solar Panel Installation",
-    provider: "GreenTech Academy",
-    level: "Intermediate",
-    duration: "22 hours",
-    rating: 4.9,
-    students: 6230,
-    image: "https://images.unsplash.com/photo-1521618755572-156ae0cdd74d",
-    tags: ["Renewable", "Hot", "High Demand"]
-  }
-];
-
-const certifications = [
-  {
-    id: 1,
-    title: "Certified Electrician - Level 1",
-    issuer: "Electrical Safety Council",
-    validFor: "3 years",
-    requirements: "Online exam + practical assessment",
-    tag: "Most Popular"
-  },
-  {
-    id: 2,
-    title: "HVAC Technician Certificate",
-    issuer: "Climate Control Association",
-    validFor: "5 years",
-    requirements: "In-person assessment",
-    tag: "High Demand"
-  },
-  {
-    id: 3,
-    title: "Plumbing Safety Standards",
-    issuer: "National Plumbing Board",
-    validFor: "4 years",
-    requirements: "Online course + exam",
-    tag: "Essential"
-  },
-  {
-    id: 4,
-    title: "Welding Safety & Standards",
-    issuer: "Industrial Welding Institute",
-    validFor: "2 years",
-    requirements: "Practical test",
-    tag: "Required"
-  }
-];
+import { Progress } from '@/components/ui/progress';
+import { Play, Award, BookOpen, Check, Calendar, ChevronRight, Video, FileText, Users, Star } from 'lucide-react';
 
 const SkillDevelopment = () => {
+  const [progress, setProgress] = useState(0);
+  
+  // Simulate progress loading
+  React.useEffect(() => {
+    const timer = setTimeout(() => setProgress(65), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Layout>
-      <div className="container mx-auto py-8 px-4 md:px-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-nayidisha-blue mb-2">Skill Development</h1>
-          <p className="text-muted-foreground max-w-3xl">
-            Enhance your skills and increase your job opportunities with our curated courses, 
-            certifications, and training programs. All courses are designed specifically for 
-            blue-collar professionals.
+      <div className="container py-8 px-4 md:px-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-3 text-nayidisha-blue">Develop Your Skills</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Enhance your employability with our free skill development courses designed specifically for blue-collar workers.
           </p>
         </div>
-        
-        <div className="mb-8">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-nayidisha-blue to-nayidisha-blue-700 rounded-lg opacity-90"></div>
-            <div className="relative z-10 flex flex-col items-center text-white text-center py-16 px-4">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Build Skills for Better Opportunities
-              </h2>
-              <p className="max-w-2xl mb-6 text-white/90">
-                Complete courses from top training providers and get certified to improve your job prospects
-                and increase your earning potential.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                <Button className="bg-white text-nayidisha-blue hover:bg-white/90">
-                  Explore Free Courses
-                </Button>
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-nayidisha-blue">
-                  View Certifications
-                </Button>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="col-span-full md:col-span-2">
+            <Tabs defaultValue="popular" className="w-full">
+              <div className="flex justify-between items-center mb-6">
+                <TabsList>
+                  <TabsTrigger value="popular">Popular</TabsTrigger>
+                  <TabsTrigger value="free">Free Courses</TabsTrigger>
+                  <TabsTrigger value="trending">Trending</TabsTrigger>
+                  <TabsTrigger value="certificates">Certification</TabsTrigger>
+                </TabsList>
               </div>
-            </div>
+
+              <TabsContent value="popular" className="space-y-6">
+                <CourseCard 
+                  title="Basic Electrical Wiring"
+                  description="Learn the fundamentals of electrical wiring for residential and commercial settings."
+                  image="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                  category="Electrical"
+                  duration="4 weeks"
+                  level="Beginner"
+                  students={1240}
+                  featured
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CourseCard 
+                    title="Plumbing Installation & Repair"
+                    description="Master the skills needed for residential and commercial plumbing."
+                    image="https://images.unsplash.com/photo-1680857323824-76a033961e19?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Plumbing"
+                    duration="3 weeks"
+                    level="Intermediate"
+                    students={954}
+                  />
+                  
+                  <CourseCard 
+                    title="Carpentry Basics"
+                    description="Learn fundamental woodworking skills and furniture making techniques."
+                    image="https://images.unsplash.com/photo-1504903271097-d7e7c7f5f7ad?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Carpentry"
+                    duration="5 weeks"
+                    level="Beginner"
+                    students={763}
+                  />
+                  
+                  <CourseCard 
+                    title="HVAC Maintenance"
+                    description="Comprehensive course on heating, ventilation and air conditioning systems."
+                    image="https://images.unsplash.com/photo-1621905252507-1a1a6a0f9394?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="HVAC"
+                    duration="6 weeks"
+                    level="Intermediate"
+                    students={529}
+                  />
+                  
+                  <CourseCard 
+                    title="Welding Techniques"
+                    description="Learn MIG, TIG, and stick welding methods for various applications."
+                    image="https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Welding"
+                    duration="8 weeks"
+                    level="Advanced"
+                    students={412}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="free" className="space-y-6">
+                <h2 className="text-xl font-semibold mb-4">Free Courses to Boost Your Skills</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CourseCard 
+                    title="Introduction to Electrician Work"
+                    description="Get started with the basics of electrical work and safety procedures."
+                    image="https://images.unsplash.com/photo-1555963966-b7ae5404b6ed?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Electrical"
+                    duration="2 weeks"
+                    level="Beginner"
+                    students={2150}
+                    free
+                  />
+                  
+                  <CourseCard 
+                    title="Basic Plumbing Skills"
+                    description="Learn essential plumbing skills for common household repairs."
+                    image="https://images.unsplash.com/photo-1621905252-f5e18fd20032?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Plumbing"
+                    duration="2 weeks"
+                    level="Beginner"
+                    students={1876}
+                    free
+                  />
+                  
+                  <CourseCard 
+                    title="Home Repair Fundamentals"
+                    description="Master the essential skills for common household repairs and maintenance."
+                    image="https://images.unsplash.com/photo-1617722694080-f03f378e6fb7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Maintenance"
+                    duration="3 weeks"
+                    level="Beginner"
+                    students={1540}
+                    free
+                  />
+                  
+                  <CourseCard 
+                    title="Construction Safety"
+                    description="Essential safety knowledge for working in construction environments."
+                    image="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Safety"
+                    duration="1 week"
+                    level="All Levels"
+                    students={3240}
+                    free
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="trending" className="space-y-6">
+                <h2 className="text-xl font-semibold mb-4">Trending Skill Courses</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CourseCard 
+                    title="Solar Panel Installation"
+                    description="Learn to install and maintain solar panel systems for residential properties."
+                    image="https://images.unsplash.com/photo-1595437193398-f24279553f4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Renewable Energy"
+                    duration="4 weeks"
+                    level="Intermediate"
+                    students={1876}
+                    trending
+                  />
+                  
+                  <CourseCard 
+                    title="Smart Home Installation"
+                    description="Master the installation and configuration of smart home devices and systems."
+                    image="https://images.unsplash.com/photo-1558002038-184e11dc8e87?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Electronics"
+                    duration="3 weeks"
+                    level="Intermediate"
+                    students={1342}
+                    trending
+                  />
+                  
+                  <CourseCard 
+                    title="EV Charging Installation"
+                    description="Learn to install and maintain electric vehicle charging stations."
+                    image="https://images.unsplash.com/photo-1593941707882-a5bba13bt176?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Automotive"
+                    duration="2 weeks"
+                    level="Intermediate"
+                    students={986}
+                    trending
+                  />
+                  
+                  <CourseCard 
+                    title="Fiber Optic Installation"
+                    description="Comprehensive training on fiber optic cable installation and maintenance."
+                    image="https://images.unsplash.com/photo-1562436356-11574662e477?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Telecommunications"
+                    duration="5 weeks"
+                    level="Advanced"
+                    students={754}
+                    trending
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="certificates" className="space-y-6">
+                <h2 className="text-xl font-semibold mb-4">Certification Programs</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CourseCard 
+                    title="NSDC Certified Electrician"
+                    description="Official certification recognized by the National Skill Development Corporation."
+                    image="https://images.unsplash.com/photo-1621905251918-48149f9f7483?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Certification"
+                    duration="12 weeks"
+                    level="All Levels"
+                    students={2435}
+                    certification
+                  />
+                  
+                  <CourseCard 
+                    title="Certified Plumbing Professional"
+                    description="Industry-recognized certification for plumbing professionals."
+                    image="https://images.unsplash.com/photo-1621905252144-2bd9146903fe?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Certification"
+                    duration="10 weeks"
+                    level="Intermediate"
+                    students={1768}
+                    certification
+                  />
+                  
+                  <CourseCard 
+                    title="Construction Safety Certification"
+                    description="Comprehensive safety certification for construction site workers."
+                    image="https://images.unsplash.com/photo-1508341421810-36b8fc06075b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Certification"
+                    duration="8 weeks"
+                    level="All Levels"
+                    students={3240}
+                    certification
+                  />
+                  
+                  <CourseCard 
+                    title="HVAC Technician Certification"
+                    description="Professional certification for HVAC installation and maintenance."
+                    image="https://images.unsplash.com/photo-1534398079543-7ae6d016b86a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80"
+                    category="Certification"
+                    duration="16 weeks"
+                    level="Advanced"
+                    students={1245}
+                    certification
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <div className="col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Learning Path</CardTitle>
+                <CardDescription>Track your progress and recommended courses</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Profile Completion</span>
+                    <span className="font-medium">{progress}%</span>
+                  </div>
+                  <Progress value={progress} className="h-2" />
+                </div>
+
+                <div>
+                  <h3 className="font-medium mb-3">Recommended for You</h3>
+                  <div className="space-y-3">
+                    <RecommendedCourse 
+                      title="Electrical Safety Standards"
+                      duration="2hr 30min"
+                      progress={45}
+                    />
+                    <RecommendedCourse 
+                      title="Advanced Circuit Design"
+                      duration="3hr 15min"
+                      progress={0}
+                    />
+                    <RecommendedCourse 
+                      title="Power Distribution Systems"
+                      duration="4hr"
+                      progress={0}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium mb-3">Your Certificates</h3>
+                  <div className="space-y-3">
+                    <Certificate 
+                      title="Basic Electrical Wiring"
+                      issueDate="Jan 2023"
+                      organization="NSDC"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">
+                  View All Learning Resources <ChevronRight size={16} className="ml-2" />
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6 mb-6">
-          <div className="w-full md:w-2/3">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-              <h2 className="text-2xl font-bold mb-2 sm:mb-0">Popular Courses</h2>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-1" /> Filter
-                </Button>
-                <div className="relative">
-                  <Search className="h-4 w-4 absolute left-2.5 top-2.5 text-muted-foreground" />
-                  <Input placeholder="Search courses" className="pl-8 w-[200px]" />
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {courses.map(course => (
-                <Card key={course.id} className="overflow-hidden card-hover">
-                  <div className="aspect-video relative bg-muted">
-                    <img 
-                      src={course.image} 
-                      alt={course.title} 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Button variant="secondary" size="sm" className="rounded-full h-12 w-12 p-0">
-                        <Play className="h-5 w-5 ml-0.5" />
-                      </Button>
-                    </div>
-                    <div className="absolute top-2 right-2 flex gap-1">
-                      {course.tags.map((tag, i) => (
-                        <Badge key={i} className="bg-black/50 text-white border-none">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-lg leading-tight">{course.title}</h3>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span className="ml-1 text-sm font-medium">{course.rating}</span>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-3">{course.provider}</p>
-                    
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <div className="flex items-center">
-                        <Clock className="h-3.5 w-3.5 mr-1" />
-                        <span>{course.duration}</span>
-                      </div>
-                      <span className="text-xs">•</span>
-                      <span>{course.level}</span>
-                      <span className="text-xs">•</span>
-                      <span>{course.students.toLocaleString()} students</span>
-                    </div>
-                  </CardContent>
-                  
-                  <CardFooter className="p-4 pt-0 flex justify-between">
-                    <Badge variant="outline" className="bg-nayidisha-blue-50">
-                      {course.tags[0]}
-                    </Badge>
-                    <Button size="sm">Start Learning</Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-            
-            <div className="flex justify-center mt-8">
-              <Button variant="outline">
-                Load More Courses <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          <div className="w-full md:w-1/3 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Get Certified</CardTitle>
-                <CardDescription>Increase your job prospects with these industry-recognized certifications</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {certifications.map(cert => (
-                  <div 
-                    key={cert.id} 
-                    className="p-3 border rounded-md border-muted hover:border-primary hover:bg-muted/20 transition-colors cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{cert.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          By {cert.issuer}
-                        </p>
-                      </div>
-                      {cert.tag && (
-                        <Badge className="bg-nayidisha-orange text-white border-none">
-                          {cert.tag}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="mt-2 text-sm flex flex-wrap gap-y-1 gap-x-3 text-muted-foreground">
-                      <div className="flex items-center">
-                        <span className="font-medium mr-1">Valid:</span> {cert.validFor}
-                      </div>
-                      <div className="flex items-center">
-                        <span className="font-medium mr-1">Requirements:</span> {cert.requirements}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-              
-              <CardFooter>
-                <Button className="w-full">View All Certifications</Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-nayidisha-blue/10 to-nayidisha-blue/5 border-nayidisha-blue/20">
-              <CardHeader>
-                <CardTitle className="text-nayidisha-blue">Skill Assessment</CardTitle>
-                <CardDescription>Evaluate your current skills and get personalized recommendations</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-nayidisha-blue/20 flex items-center justify-center text-nayidisha-blue">
-                    1
-                  </div>
-                  <p className="text-sm">Take a 15-minute assessment</p>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-nayidisha-blue/20 flex items-center justify-center text-nayidisha-blue">
-                    2
-                  </div>
-                  <p className="text-sm">Get your skill report</p>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-nayidisha-blue/20 flex items-center justify-center text-nayidisha-blue">
-                    3
-                  </div>
-                  <p className="text-sm">Receive a personalized learning path</p>
-                </div>
-              </CardContent>
-              
-              <CardFooter>
-                <Button className="w-full bg-nayidisha-blue hover:bg-nayidisha-blue-600">
-                  Start Assessment
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Top Instructors</CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={`https://i.pravatar.cc/100?img=${i+10}`} />
-                      <AvatarFallback>IN</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h4 className="font-medium">Instructor Name</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {i === 1 ? 'Electrical Engineering' : 
-                         i === 2 ? 'Plumbing Expert' : 'Safety Specialist'} 
-                      </p>
-                    </div>
-                    <div className="flex items-center ml-auto">
-                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                      <span className="ml-1 text-sm">{4.7 + i/10}</span>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        
-        <div className="mt-12 bg-muted rounded-lg p-6 md:p-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Need Help Finding the Right Course?</h2>
-              <p className="text-muted-foreground max-w-xl">
-                Our career advisors can help you create a personalized learning plan based on your goals and current skill level.
-              </p>
-            </div>
-            <Button size="lg" className="whitespace-nowrap">
-              Book a Free Consultation
-            </Button>
+        <div className="mt-12 text-center">
+          <h2 className="text-2xl font-bold mb-6">Learning Partners</h2>
+          <div className="flex flex-wrap justify-center gap-8">
+            <PartnerLogo name="National Skill Development Corporation" />
+            <PartnerLogo name="Skill India" />
+            <PartnerLogo name="ITI" />
+            <PartnerLogo name="EPFO" />
           </div>
         </div>
       </div>
     </Layout>
+  );
+};
+
+const CourseCard = ({ 
+  title, 
+  description, 
+  image, 
+  category, 
+  duration, 
+  level, 
+  students, 
+  featured = false,
+  free = false,
+  trending = false,
+  certification = false
+}) => {
+  return (
+    <Card className={`overflow-hidden transition-all hover:shadow-lg ${featured ? 'col-span-full' : ''}`}>
+      <div className={`${featured ? 'md:grid md:grid-cols-2 gap-6' : ''}`}>
+        <div className={`relative ${featured ? 'h-full min-h-[200px]' : 'h-48'} bg-muted`}>
+          <img 
+            src={image} 
+            alt={title} 
+            className="w-full h-full object-cover"
+          />
+          {free && (
+            <Badge className="absolute top-2 right-2 bg-nayidisha-blue">
+              Free
+            </Badge>
+          )}
+          {trending && (
+            <Badge className="absolute top-2 right-2 bg-nayidisha-orange">
+              Trending
+            </Badge>
+          )}
+          {certification && (
+            <Badge className="absolute top-2 right-2 bg-green-600">
+              Certification
+            </Badge>
+          )}
+        </div>
+        <div className="p-5">
+          <Badge variant="outline" className="mb-2">
+            {category}
+          </Badge>
+          <h3 className="text-xl font-bold mb-2">{title}</h3>
+          <p className="text-muted-foreground mb-4">{description}</p>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+            <div className="flex items-center gap-1">
+              <Calendar size={14} />
+              <span>{duration}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <BookOpen size={14} />
+              <span>{level}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users size={14} />
+              <span>{students}+ students</span>
+            </div>
+          </div>
+          <Button>
+            <Play size={16} className="mr-2" />
+            Start Learning
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+const RecommendedCourse = ({ title, duration, progress }) => {
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer">
+      <div className="w-10 h-10 rounded bg-muted/70 flex items-center justify-center">
+        <Video size={18} className="text-muted-foreground" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-medium truncate">{title}</h4>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{duration}</span>
+          {progress > 0 && (
+            <>
+              <span>•</span>
+              <span>{progress}% complete</span>
+            </>
+          )}
+        </div>
+        {progress > 0 && <Progress value={progress} className="h-1 mt-1" />}
+      </div>
+    </div>
+  );
+};
+
+const Certificate = ({ title, issueDate, organization }) => {
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer">
+      <div className="w-10 h-10 rounded bg-muted/70 flex items-center justify-center">
+        <Award size={18} className="text-nayidisha-blue" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-medium truncate">{title}</h4>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{organization}</span>
+          <span>•</span>
+          <span>{issueDate}</span>
+        </div>
+      </div>
+      <Button variant="ghost" size="icon">
+        <FileText size={14} />
+      </Button>
+    </div>
+  );
+};
+
+const PartnerLogo = ({ name }) => {
+  // Generate initials from name
+  const initials = name
+    .split(' ')
+    .map(word => word[0])
+    .slice(0, 2)
+    .join('');
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-2">
+        <span className="text-xl font-bold">{initials}</span>
+      </div>
+      <span className="text-sm text-muted-foreground">{name}</span>
+    </div>
   );
 };
 

@@ -14,13 +14,33 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
-import { Calendar, Check, ChevronRight, Edit, MapPin, Phone, Plus, Upload, User, X } from 'lucide-react';
+import { 
+  Calendar, 
+  Check, 
+  ChevronRight, 
+  Edit, 
+  MapPin, 
+  Phone, 
+  Plus, 
+  Upload, 
+  User, 
+  X,
+  Mail,
+  Cake,
+  Languages,
+  Home,
+  Smartphone
+} from 'lucide-react';
+
 import ProfileSkillSection from '@/components/profile/ProfileSkillSection';
 import ProfileEducation from '@/components/profile/ProfileEducation';
+import ProfileJobPreferences from '@/components/profile/ProfileJobPreferences';
+import ProfileDocumentWallet from '@/components/profile/ProfileDocumentWallet';
 
 const Profile = () => {
   const [profileCompletion, setProfileCompletion] = useState(65);
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('skills');
   
   const handleSaveProfile = () => {
     setIsEditing(false);
@@ -32,10 +52,19 @@ const Profile = () => {
     // Simulate progress increase
     setProfileCompletion(Math.min(profileCompletion + 10, 100));
   };
+  
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+  };
 
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4 md:px-6">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">My Profile</h1>
+          <ProfileCompletionBadge completion={profileCompletion} />
+        </div>
+        
         <div className="flex flex-col md:flex-row justify-between items-start gap-6">
           {/* Profile sidebar */}
           <div className="w-full md:w-1/3 lg:w-1/4">
@@ -76,6 +105,10 @@ const Profile = () => {
                       <span className="text-sm">+91 98765 43210</span>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Mail size={16} className="text-muted-foreground" />
+                      <span className="text-sm">rahul.singh@example.com</span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <User size={16} className="text-muted-foreground" />
                       <span className="text-sm">Electrician, 5 Years Exp.</span>
                     </div>
@@ -93,6 +126,23 @@ const Profile = () => {
                       <Badge variant="outline" className="bg-muted/50">Electrical Wiring</Badge>
                       <Badge variant="outline" className="bg-muted/50">Circuit Repair</Badge>
                       <Badge variant="outline" className="bg-muted/50">Industrial</Badge>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Quick Links</p>
+                    <div className="space-y-1">
+                      <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                        <Link to="/saved-jobs">Saved Jobs</Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                        <Link to="/applications">My Applications</Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                        <Link to="/settings">Account Settings</Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -130,7 +180,10 @@ const Profile = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName" className="flex items-center gap-2">
+                      <User size={14} className="text-muted-foreground" />
+                      Full Name
+                    </Label>
                     <Input 
                       id="fullName" 
                       defaultValue="Rahul Singh" 
@@ -139,7 +192,10 @@ const Profile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Phone size={14} className="text-muted-foreground" />
+                      Phone Number
+                    </Label>
                     <Input 
                       id="phone" 
                       defaultValue="+91 98765 43210" 
@@ -148,7 +204,22 @@ const Profile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="alternatePhone" className="flex items-center gap-2">
+                      <Smartphone size={14} className="text-muted-foreground" />
+                      Alternate Phone (Optional)
+                    </Label>
+                    <Input 
+                      id="alternatePhone" 
+                      placeholder="Enter alternate phone number" 
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail size={14} className="text-muted-foreground" />
+                      Email
+                    </Label>
                     <Input 
                       id="email" 
                       defaultValue="rahul.singh@example.com" 
@@ -157,7 +228,10 @@ const Profile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="dob">Date of Birth</Label>
+                    <Label htmlFor="dob" className="flex items-center gap-2">
+                      <Cake size={14} className="text-muted-foreground" />
+                      Date of Birth
+                    </Label>
                     <Input 
                       id="dob" 
                       type="date"
@@ -167,7 +241,10 @@ const Profile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Gender</Label>
+                    <Label htmlFor="gender" className="flex items-center gap-2">
+                      <User size={14} className="text-muted-foreground" />
+                      Gender
+                    </Label>
                     <Select disabled={!isEditing} defaultValue="male">
                       <SelectTrigger id="gender">
                         <SelectValue placeholder="Select gender" />
@@ -182,7 +259,10 @@ const Profile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="language">Preferred Language</Label>
+                    <Label htmlFor="language" className="flex items-center gap-2">
+                      <Languages size={14} className="text-muted-foreground" />
+                      Preferred Language
+                    </Label>
                     <Select disabled={!isEditing} defaultValue="hindi">
                       <SelectTrigger id="language">
                         <SelectValue placeholder="Select language" />
@@ -193,13 +273,19 @@ const Profile = () => {
                         <SelectItem value="punjabi">Punjabi</SelectItem>
                         <SelectItem value="marathi">Marathi</SelectItem>
                         <SelectItem value="tamil">Tamil</SelectItem>
+                        <SelectItem value="telugu">Telugu</SelectItem>
+                        <SelectItem value="bengali">Bengali</SelectItem>
+                        <SelectItem value="gujarati">Gujarati</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 
                 <div className="mt-6 space-y-2">
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="address" className="flex items-center gap-2">
+                    <Home size={14} className="text-muted-foreground" />
+                    Address
+                  </Label>
                   <Textarea 
                     id="address" 
                     defaultValue="123, Karol Bagh, New Delhi - 110005, India" 
@@ -208,21 +294,40 @@ const Profile = () => {
                   />
                 </div>
                 
-                <div className="mt-6 flex items-center gap-2">
-                  <Switch id="notifications" defaultChecked />
-                  <Label htmlFor="notifications">
-                    Receive job alerts via SMS
-                  </Label>
+                <div className="mt-6 space-y-4">
+                  <h3 className="font-medium">Communication Preferences</h3>
+                  
+                  <div className="flex items-center gap-2">
+                    <Switch id="notifications" defaultChecked />
+                    <Label htmlFor="notifications">
+                      Receive job alerts via SMS
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Switch id="emailNotifications" defaultChecked />
+                    <Label htmlFor="emailNotifications">
+                      Receive email notifications
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Switch id="whatsappNotifications" />
+                    <Label htmlFor="whatsappNotifications">
+                      Receive WhatsApp notifications
+                    </Label>
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Tabs defaultValue="skills" className="w-full">
+            <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
               <div className="flex justify-between items-center mb-4">
                 <TabsList className="w-full md:w-auto">
                   <TabsTrigger value="skills">Skills & Experience</TabsTrigger>
                   <TabsTrigger value="education">Education</TabsTrigger>
                   <TabsTrigger value="preferences">Job Preferences</TabsTrigger>
+                  <TabsTrigger value="documents">Documents</TabsTrigger>
                 </TabsList>
                 
                 <div className="hidden md:block">
@@ -246,159 +351,41 @@ const Profile = () => {
               </TabsContent>
               
               <TabsContent value="preferences" className="mt-0">
-                <Card className="border-2 border-muted">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xl">Job Preferences</CardTitle>
-                    <CardDescription>Tell us what you're looking for</CardDescription>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="job-type">Job Type</Label>
-                        <Select defaultValue="full-time">
-                          <SelectTrigger id="job-type">
-                            <SelectValue placeholder="Select job type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="full-time">Full-time</SelectItem>
-                            <SelectItem value="part-time">Part-time</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="temporary">Temporary</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="availability">Availability</Label>
-                        <Select defaultValue="immediate">
-                          <SelectTrigger id="availability">
-                            <SelectValue placeholder="Select availability" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="immediate">Immediate</SelectItem>
-                            <SelectItem value="1-week">Within 1 week</SelectItem>
-                            <SelectItem value="2-weeks">Within 2 weeks</SelectItem>
-                            <SelectItem value="1-month">Within 1 month</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="salary-min">Expected Salary (₹ per month)</Label>
-                        <div className="flex gap-4">
-                          <Input 
-                            id="salary-min" 
-                            defaultValue="15000" 
-                            placeholder="Minimum"
-                          />
-                          <Input 
-                            id="salary-max" 
-                            defaultValue="25000" 
-                            placeholder="Maximum"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="work-location">Preferred Work Location</Label>
-                        <Input 
-                          id="work-location" 
-                          defaultValue="Delhi NCR" 
-                          placeholder="Enter locations"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6 space-y-2">
-                      <div className="flex justify-between">
-                        <Label htmlFor="job-roles">Preferred Job Roles</Label>
-                        <Button variant="ghost" size="sm" className="h-6 text-xs text-nayidisha-blue">
-                          <Plus className="h-3 w-3 mr-1" /> Add More
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className="px-3 py-1 flex items-center gap-1">
-                          Electrician
-                          <X className="h-3 w-3 cursor-pointer" />
-                        </Badge>
-                        <Badge className="px-3 py-1 flex items-center gap-1">
-                          Maintenance Technician
-                          <X className="h-3 w-3 cursor-pointer" />
-                        </Badge>
-                        <Badge className="px-3 py-1 flex items-center gap-1">
-                          Electrical Supervisor
-                          <X className="h-3 w-3 cursor-pointer" />
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Switch id="relocate" defaultChecked />
-                        <Label htmlFor="relocate">
-                          Willing to relocate for the right opportunity
-                        </Label>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-2">
-                        <Switch id="travel" />
-                        <Label htmlFor="travel">
-                          Comfortable with traveling/commuting long distances
-                        </Label>
-                      </div>
-                    </div>
-                  </CardContent>
-                  
-                  <CardFooter className="flex justify-end gap-2">
-                    <Button variant="outline">Reset</Button>
-                    <Button onClick={() => {
-                      toast({
-                        title: "Preferences saved",
-                        description: "Your job preferences have been updated successfully."
-                      });
-                    }}>Save Preferences</Button>
-                  </CardFooter>
-                </Card>
+                <ProfileJobPreferences />
+              </TabsContent>
+              
+              <TabsContent value="documents" className="mt-0">
+                <ProfileDocumentWallet />
               </TabsContent>
             </Tabs>
-            
-            <Card className="border-2 border-muted overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-nayidisha-blue-100 to-nayidisha-blue-50 pb-3">
-                <CardTitle className="text-nayidisha-blue">Your Document Wallet</CardTitle>
-                <CardDescription>Safely store your important documents for job applications</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Card className="border border-dashed border-muted hover:border-primary transition-colors">
-                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-3">
-                        <Upload className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <h3 className="font-medium">Resume/CV</h3>
-                      <p className="text-sm text-muted-foreground mt-1">Upload your latest resume</p>
-                      <Button variant="outline" size="sm" className="mt-3">Upload</Button>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="border border-dashed border-muted hover:border-primary transition-colors">
-                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-3">
-                        <Upload className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <h3 className="font-medium">ID Proof</h3>
-                      <p className="text-sm text-muted-foreground mt-1">Aadhaar, PAN, or Voter ID</p>
-                      <Button variant="outline" size="sm" className="mt-3">Upload</Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
     </Layout>
+  );
+};
+
+const ProfileCompletionBadge = ({ completion }) => {
+  let status = "Incomplete";
+  let color = "bg-amber-500";
+  
+  if (completion >= 100) {
+    status = "Complete";
+    color = "bg-green-500";
+  } else if (completion >= 70) {
+    status = "Almost Complete";
+    color = "bg-blue-500";
+  } else if (completion >= 40) {
+    status = "In Progress";
+    color = "bg-amber-500";
+  }
+  
+  return (
+    <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full">
+      <div className={`w-3 h-3 rounded-full ${color}`}></div>
+      <span className="text-sm font-medium">{status}</span>
+      <span className="text-sm text-muted-foreground">({completion}%)</span>
+    </div>
   );
 };
 
