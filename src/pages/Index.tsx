@@ -6,6 +6,11 @@ import SearchBar from '@/components/SearchBar';
 import JobCard, { JobProps } from '@/components/JobCard';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useAuth } from '@/components/AuthContext';
+import { AnimatedCard } from '@/components/Animation/AnimatedCard';
+import { CounterAnimation } from '@/components/Animation/CounterAnimation';
+import { WavyBackground } from '@/components/Animation/WavyBackground';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // Mock data for job listings
 const featuredJobs: JobProps[] = [
@@ -101,6 +106,7 @@ const successStories = [
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
+  const { user } = useAuth();
 
   const handleSearch = (query: string, location: string) => {
     setSearchQuery(query);
@@ -111,35 +117,61 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
-      <section className="relative bg-nayidisha-blue py-20 px-4">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?q=80&w=2070')] bg-cover bg-center opacity-10"></div>
-        <div className="container relative z-10 mx-auto text-white">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in">
-              Find The Perfect Blue-Collar Job For You
-            </h1>
-            <p className="text-lg md:text-xl mb-8 opacity-90">
-              Connect with thousands of employers looking for skilled workers like you. Your new career journey starts here.
-            </p>
-            <div className="bg-white/10 backdrop-blur-md p-4 rounded-lg">
-              <SearchBar onSearch={handleSearch} />
+      {/* Hero Section with WavyBackground */}
+      <WavyBackground className="relative py-20 px-4 bg-nayidisha-blue text-white">
+        <div className="container mx-auto">
+          <div className="flex flex-wrap items-center">
+            <div className="w-full lg:w-1/2 text-center lg:text-left">
+              <div className="max-w-xl mx-auto lg:mx-0">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in">
+                  A New Direction for Your Work Life
+                </h1>
+                <p className="text-xl md:text-2xl mb-8 opacity-90">
+                  Find jobs that find you. Connect with thousands of employers looking for skilled workers like you.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-8">
+                  <Button asChild size="lg" className="bg-nayidisha-orange hover:bg-nayidisha-orange/90">
+                    <Link to="/auth">Get Hired</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    <Link to={user ? "/post-job" : "/auth"}>Post a Job</Link>
+                  </Button>
+                </div>
+
+                <div className="mt-6 flex justify-center lg:justify-start">
+                  <LanguageSwitcher />
+                </div>
+              </div>
             </div>
-            <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
-              <span>Popular searches:</span>
-              {['Electrician', 'Plumber', 'Driver', 'Carpenter', 'Security'].map((term) => (
-                <button 
-                  key={term} 
-                  className="bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors"
-                  onClick={() => handleSearch(term, '')}
-                >
-                  {term}
-                </button>
-              ))}
+            
+            <div className="w-full lg:w-1/2 mt-10 lg:mt-0 flex justify-center">
+              <div className="relative max-w-md">
+                <div className="absolute -top-8 -right-8 w-40 h-40 bg-nayidisha-orange/20 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/20 rounded-full blur-2xl"></div>
+                
+                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20 shadow-xl">
+                  <div className="mb-6">
+                    <SearchBar onSearch={handleSearch} />
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-2 text-sm">
+                    <span>Popular:</span>
+                    {['Electrician', 'Plumber', 'Driver', 'Carpenter'].map((term) => (
+                      <button 
+                        key={term} 
+                        className="bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors"
+                        onClick={() => handleSearch(term, '')}
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </section>
+      </WavyBackground>
 
       {/* Featured Jobs Section */}
       <section className="py-16 px-4 bg-gradient-to-b from-background to-muted/30">
@@ -154,7 +186,9 @@ const Index = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredJobs.map((job) => (
-              <JobCard key={job.id} {...job} />
+              <AnimatedCard key={job.id} className="h-full">
+                <JobCard {...job} />
+              </AnimatedCard>
             ))}
           </div>
         </div>
@@ -171,15 +205,16 @@ const Index = () => {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {categories.map((category) => (
-              <Link 
-                key={category.name} 
-                to={`/jobs?category=${category.name}`}
-                className="flex flex-col items-center justify-center p-6 rounded-lg neumorphic card-hover text-center"
-              >
-                <span className="text-3xl mb-2">{category.icon}</span>
-                <h3 className="font-medium mb-1">{category.name}</h3>
-                <span className="text-sm text-muted-foreground">{category.count} jobs</span>
-              </Link>
+              <AnimatedCard key={category.name} className="h-full">
+                <Link 
+                  to={`/jobs?category=${category.name}`}
+                  className="flex flex-col items-center justify-center p-6 rounded-lg bg-white dark:bg-muted border shadow-sm hover:shadow-md transition-shadow h-full"
+                >
+                  <span className="text-3xl mb-2">{category.icon}</span>
+                  <h3 className="font-medium mb-1">{category.name}</h3>
+                  <span className="text-sm text-muted-foreground">{category.count} jobs</span>
+                </Link>
+              </AnimatedCard>
             ))}
           </div>
         </div>
@@ -228,7 +263,7 @@ const Index = () => {
           </div>
 
           <div className="text-center mt-10">
-            <Button asChild size="lg" className="btn-primary">
+            <Button asChild size="lg" className="bg-nayidisha-blue hover:bg-nayidisha-blue-600">
               <Link to="/auth">Get Started Now</Link>
             </Button>
           </div>
@@ -247,21 +282,55 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {successStories.map((story) => (
-              <div key={story.id} className="bg-white dark:bg-muted p-6 rounded-lg border shadow-sm">
-                <div className="flex items-center mb-4">
-                  <img 
-                    src={story.image} 
-                    alt={story.name} 
-                    className="w-12 h-12 rounded-full object-cover mr-4" 
-                  />
-                  <div>
-                    <h3 className="font-medium">{story.name}</h3>
-                    <p className="text-sm text-muted-foreground">{story.job} at {story.company}</p>
+              <AnimatedCard key={story.id} className="h-full">
+                <div className="bg-white dark:bg-muted p-6 rounded-lg border shadow-sm h-full">
+                  <div className="flex items-center mb-4">
+                    <img 
+                      src={story.image} 
+                      alt={story.name} 
+                      className="w-12 h-12 rounded-full object-cover mr-4" 
+                    />
+                    <div>
+                      <h3 className="font-medium">{story.name}</h3>
+                      <p className="text-sm text-muted-foreground">{story.job} at {story.company}</p>
+                    </div>
                   </div>
+                  <p className="italic">{story.story}</p>
                 </div>
-                <p className="italic">{story.story}</p>
-              </div>
+              </AnimatedCard>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Counter Section */}
+      <section className="py-12 px-4 bg-muted/30">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-nayidisha-blue mb-1">
+                <CounterAnimation end={25000} suffix="+" />
+              </div>
+              <p className="text-muted-foreground">Jobs Posted</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-nayidisha-blue mb-1">
+                <CounterAnimation end={78000} suffix="+" delay={200} />
+              </div>
+              <p className="text-muted-foreground">Registered Workers</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-nayidisha-blue mb-1">
+                <CounterAnimation end={5000} suffix="+" delay={400} />
+              </div>
+              <p className="text-muted-foreground">Hiring Companies</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-nayidisha-blue mb-1">
+                <CounterAnimation end={42} suffix="K+" delay={600} />
+              </div>
+              <p className="text-muted-foreground">Successful Placements</p>
+            </div>
           </div>
         </div>
       </section>
@@ -277,7 +346,7 @@ const Index = () => {
             <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
               <Link to="/jobs">Browse Jobs</Link>
             </Button>
-            <Button asChild size="lg" className="bg-nayidisha-orange hover:bg-nayidisha-orange-600">
+            <Button asChild size="lg" className="bg-nayidisha-orange hover:bg-nayidisha-orange/90">
               <Link to="/auth">Create Account</Link>
             </Button>
           </div>
