@@ -8,6 +8,11 @@ import Index from "./pages/Index";
 import JobListings from "./pages/JobListings";
 import JobDetail from "./pages/JobDetail";
 import NotFound from "./pages/NotFound";
+import SkillDevelopment from "./pages/SkillDevelopment";
+import Employers from "./pages/Employers";
+import About from "./pages/About";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +26,11 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/jobs" element={<JobListings />} />
           <Route path="/jobs/:id" element={<JobDetail />} />
-          {/* Additional routes could be added here */}
+          <Route path="/skills" element={<SkillDevelopment />} />
+          <Route path="/employers" element={<Employers />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

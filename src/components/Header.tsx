@@ -1,12 +1,20 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Bell, Menu, Search, User, X } from "lucide-react";
 import { cn } from '@/lib/utils';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b">
@@ -29,10 +37,10 @@ const Header = () => {
         </div>
 
         <div className="hidden md:flex items-center space-x-1">
-          <NavLink to="/jobs">Job Listings</NavLink>
-          <NavLink to="/skills">Skill Development</NavLink>
-          <NavLink to="/employers">For Employers</NavLink>
-          <NavLink to="/about">About Us</NavLink>
+          <NavLink to="/jobs" active={isActive('/jobs')}>Job Listings</NavLink>
+          <NavLink to="/skills" active={isActive('/skills')}>Skill Development</NavLink>
+          <NavLink to="/employers" active={isActive('/employers')}>For Employers</NavLink>
+          <NavLink to="/about" active={isActive('/about')}>About Us</NavLink>
         </div>
 
         <div className="flex items-center gap-2">
@@ -60,10 +68,10 @@ const Header = () => {
         menuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
       )}>
         <div className="flex flex-col space-y-2">
-          <MobileNavLink to="/jobs" onClick={() => setMenuOpen(false)}>Job Listings</MobileNavLink>
-          <MobileNavLink to="/skills" onClick={() => setMenuOpen(false)}>Skill Development</MobileNavLink>
-          <MobileNavLink to="/employers" onClick={() => setMenuOpen(false)}>For Employers</MobileNavLink>
-          <MobileNavLink to="/about" onClick={() => setMenuOpen(false)}>About Us</MobileNavLink>
+          <MobileNavLink to="/jobs" active={isActive('/jobs')} onClick={() => setMenuOpen(false)}>Job Listings</MobileNavLink>
+          <MobileNavLink to="/skills" active={isActive('/skills')} onClick={() => setMenuOpen(false)}>Skill Development</MobileNavLink>
+          <MobileNavLink to="/employers" active={isActive('/employers')} onClick={() => setMenuOpen(false)}>For Employers</MobileNavLink>
+          <MobileNavLink to="/about" active={isActive('/about')} onClick={() => setMenuOpen(false)}>About Us</MobileNavLink>
           <Button asChild className="mt-2 w-full btn-primary">
             <Link to="/auth" onClick={() => setMenuOpen(false)}>Login / Register</Link>
           </Button>
@@ -73,16 +81,13 @@ const Header = () => {
   );
 };
 
-const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
-  // This is a simplified active check
-  const isActive = window.location.pathname === to;
-  
+const NavLink = ({ to, active, children }: { to: string; active: boolean; children: React.ReactNode }) => {
   return (
     <Link
       to={to}
       className={cn(
         "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-        isActive 
+        active 
           ? "bg-primary text-primary-foreground" 
           : "hover:bg-muted"
       )}
@@ -92,16 +97,14 @@ const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) =>
   );
 };
 
-const MobileNavLink = ({ to, onClick, children }: { to: string; onClick: () => void; children: React.ReactNode }) => {
-  const isActive = window.location.pathname === to;
-  
+const MobileNavLink = ({ to, active, onClick, children }: { to: string; active: boolean; onClick: () => void; children: React.ReactNode }) => {
   return (
     <Link
       to={to}
       onClick={onClick}
       className={cn(
         "px-4 py-3 rounded-md text-lg font-medium transition-colors block",
-        isActive 
+        active 
           ? "bg-primary text-primary-foreground" 
           : "hover:bg-muted"
       )}
