@@ -50,6 +50,9 @@ const ProfileDocumentWallet = () => {
             title="Education Certificates"
             description="Degree, diploma or course certificates"
             status="pending"
+            fileName=""
+            fileSize=""
+            uploadDate=""
             onUpload={() => handleUpload("Education Certificate")}
           />
           
@@ -58,6 +61,9 @@ const ProfileDocumentWallet = () => {
             title="Work Experience"
             description="Experience letters or employment proof"
             status="pending"
+            fileName=""
+            fileSize=""
+            uploadDate=""
             onUpload={() => handleUpload("Work Experience Proof")}
           />
           
@@ -66,6 +72,9 @@ const ProfileDocumentWallet = () => {
             title="Address Proof"
             description="Utility bill or rental agreement"
             status="pending"
+            fileName=""
+            fileSize=""
+            uploadDate=""
             onUpload={() => handleUpload("Address Proof")}
           />
           
