@@ -1,0 +1,13 @@
+{
+  "name": "blue-collar-compass",
+  "version": "1.0.0",
+  "description": "Job matching platform for blue-collar workers",
+  "main": "src/test_google_sheets.js",
+  "scripts": {
+    "test": "node src/test_google_sheets.js"
+  },
+  "dependencies": {
+    "google-spreadsheet": "^4.1.1",
+    "dotenv": "^16.3.1"
+  }
+}
