@@ -130,11 +130,15 @@ const JobDetail = () => {
       <div className="container mx-auto px-4 py-8">
         <Breadcrumb className="mb-6">
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/">Home</BreadcrumbLink>
+            <BreadcrumbLink>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink as={Link} to="/jobs">Jobs</BreadcrumbLink>
+            <BreadcrumbLink>
+              <Link to="/jobs">Jobs</Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
