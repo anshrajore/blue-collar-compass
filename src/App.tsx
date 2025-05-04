@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from 'react';  // Make sure React is imported
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +17,6 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import PostJob from "./pages/PostJob";
 import { SkillIndiaOpportunities } from './pages/SkillIndiaOpportunities';
-import NonSmartphoneAccess from './pages/NonSmartphoneAccess';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -44,7 +42,6 @@ const App = () => {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/post-job" element={<PostJob />} />
                   <Route path="/skill-india-opportunities" element={<SkillIndiaOpportunities />} />
-                  <Route path="/non-smartphone-access" element={<NonSmartphoneAccess />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
