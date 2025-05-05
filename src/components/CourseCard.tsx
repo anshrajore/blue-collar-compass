@@ -83,4 +83,4 @@ const CourseCard: React.FC<CourseCardProps> = ({
   );
 };
 
-export default CourseCard; 
+export default CourseCard;

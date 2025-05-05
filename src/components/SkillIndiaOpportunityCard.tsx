@@ -36,9 +36,8 @@ export const SkillIndiaOpportunityCard: React.FC<SkillIndiaOpportunityCardProps>
           </div>
           <Button
             variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
             onClick={() => window.open(opportunity.link, '_blank')}
+            className="flex items-center gap-2"
           >
             View Details
             <ExternalLink className="h-4 w-4" />
@@ -47,4 +46,4 @@ export const SkillIndiaOpportunityCard: React.FC<SkillIndiaOpportunityCardProps>
       </CardContent>
     </Card>
   );
-}; 
+};
