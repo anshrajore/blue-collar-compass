@@ -42,7 +42,6 @@ const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSi
       <div>
         <h3 className="font-semibold text-lg mb-4">Filters</h3>
         <Button 
-          variant="outline" 
           size="sm" 
           className="w-full mb-4"
         >

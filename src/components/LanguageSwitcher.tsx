@@ -38,7 +38,7 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className={className}>
+        <Button size="sm" className={className}>
           <Globe className="h-4 w-4 mr-2" />
           {getCurrentLanguageName()}
         </Button>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SkillIndiaOpportunity } from '@/integrations/skillIndiaDigital';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,7 @@ export const SkillIndiaOpportunityCard: React.FC<SkillIndiaOpportunityCardProps>
       <CardHeader>
         <CardTitle className="text-xl font-semibold">{opportunity.title}</CardTitle>
         <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="secondary">{opportunity.organization}</Badge>
+          <Badge>{opportunity.organization}</Badge>
           <Badge variant="outline">{opportunity.location}</Badge>
           {opportunity.sector && <Badge variant="outline">{opportunity.sector}</Badge>}
         </div>
@@ -24,7 +25,7 @@ export const SkillIndiaOpportunityCard: React.FC<SkillIndiaOpportunityCardProps>
         <p className="text-gray-600 mb-4">{opportunity.description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {opportunity.skills.map((skill, index) => (
-            <Badge key={index} variant="secondary">
+            <Badge key={index}>
               {skill}
             </Badge>
           ))}

@@ -29,7 +29,6 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Button 
-            variant="ghost" 
             size="icon" 
             className="md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -54,7 +53,7 @@ const Header = () => {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button size="icon" className="relative">
                 <Bell size={20} />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-nayidisha-orange rounded-full"></span>
               </Button>
@@ -88,20 +87,20 @@ const Header = () => {
               </div>
               <DropdownMenuSeparator />
               <div className="p-2">
-                <Button variant="outline" size="sm" className="w-full">
+                <Button size="sm" className="w-full">
                   View All Notifications
                 </Button>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button variant="ghost" size="icon">
+          <Button size="icon">
             <Search size={20} />
           </Button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button size="icon" className="relative">
                 <User size={20} />
               </Button>
             </DropdownMenuTrigger>

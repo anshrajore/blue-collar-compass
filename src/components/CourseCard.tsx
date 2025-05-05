@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,9 +46,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
         />
         {(free || trending || certification) && (
           <div className="absolute top-2 right-2 flex gap-2">
-            {free && <Badge variant="secondary" className="bg-green-500">Free</Badge>}
-            {trending && <Badge variant="secondary" className="bg-orange-500">Trending</Badge>}
-            {certification && <Badge variant="secondary" className="bg-blue-500">Certified</Badge>}
+            {free && <Badge className="bg-green-500">Free</Badge>}
+            {trending && <Badge className="bg-orange-500">Trending</Badge>}
+            {certification && <Badge className="bg-blue-500">Certified</Badge>}
           </div>
         )}
       </div>
