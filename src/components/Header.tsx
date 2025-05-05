@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, Menu, Search, User, X } from "lucide-react";
+import { Bell, Menu, Search, User, X, Phone } from "lucide-react";
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -48,6 +48,9 @@ const Header = () => {
           <NavLink to="/jobs" active={isActive('/jobs')}>Job Listings</NavLink>
           <NavLink to="/skills" active={isActive('/skills')}>Skill Development</NavLink>
           <NavLink to="/employers" active={isActive('/employers')}>For Employers</NavLink>
+          <NavLink to="/non-smartphone-access" active={isActive('/non-smartphone-access')}>
+            <Phone size={16} className="mr-1" /> Phone Access
+          </NavLink>
           <NavLink to="/about" active={isActive('/about')}>About Us</NavLink>
         </div>
 
@@ -127,7 +130,7 @@ const Header = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button asChild className="hidden md:inline-flex btn-primary">
+          <Button asChild>
             <Link to="/auth">Login / Register</Link>
           </Button>
         </div>
@@ -142,8 +145,11 @@ const Header = () => {
           <MobileNavLink to="/jobs" active={isActive('/jobs')} onClick={() => setMenuOpen(false)}>Job Listings</MobileNavLink>
           <MobileNavLink to="/skills" active={isActive('/skills')} onClick={() => setMenuOpen(false)}>Skill Development</MobileNavLink>
           <MobileNavLink to="/employers" active={isActive('/employers')} onClick={() => setMenuOpen(false)}>For Employers</MobileNavLink>
+          <MobileNavLink to="/non-smartphone-access" active={isActive('/non-smartphone-access')} onClick={() => setMenuOpen(false)}>
+            <Phone size={16} className="mr-1" /> Phone Access
+          </MobileNavLink>
           <MobileNavLink to="/about" active={isActive('/about')} onClick={() => setMenuOpen(false)}>About Us</MobileNavLink>
-          <Button asChild className="mt-2 w-full btn-primary">
+          <Button asChild className="mt-2 w-full">
             <Link to="/auth" onClick={() => setMenuOpen(false)}>Login / Register</Link>
           </Button>
         </div>
