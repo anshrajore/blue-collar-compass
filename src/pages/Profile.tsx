@@ -36,8 +36,6 @@ import ProfileSkillSection from '@/components/profile/ProfileSkillSection';
 import ProfileEducation from '@/components/profile/ProfileEducation';
 import ProfileJobPreferences from '@/components/profile/ProfileJobPreferences';
 import ProfileDocumentWallet from '@/components/profile/ProfileDocumentWallet';
-import ResumeBuilder from '@/components/profile/ResumeBuilder';
-import VoiceProfile from '@/components/profile/VoiceProfile';
 
 const Profile = () => {
   const [profileCompletion, setProfileCompletion] = useState(65);
@@ -190,7 +188,6 @@ const Profile = () => {
                       id="fullName" 
                       defaultValue="Rahul Singh" 
                       disabled={!isEditing}
-                      className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
                   
@@ -203,7 +200,6 @@ const Profile = () => {
                       id="phone" 
                       defaultValue="+91 98765 43210" 
                       disabled={!isEditing}
-                      className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
                   
@@ -216,7 +212,6 @@ const Profile = () => {
                       id="alternatePhone" 
                       placeholder="Enter alternate phone number" 
                       disabled={!isEditing}
-                      className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
                   
@@ -229,7 +224,6 @@ const Profile = () => {
                       id="email" 
                       defaultValue="rahul.singh@example.com" 
                       disabled={!isEditing}
-                      className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
                   
@@ -243,7 +237,6 @@ const Profile = () => {
                       type="date"
                       defaultValue="1990-05-15" 
                       disabled={!isEditing}
-                      className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
                   
@@ -253,7 +246,7 @@ const Profile = () => {
                       Gender
                     </Label>
                     <Select disabled={!isEditing} defaultValue="male">
-                      <SelectTrigger id="gender" className="text-gray-900">
+                      <SelectTrigger id="gender">
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
                       <SelectContent>
@@ -271,7 +264,7 @@ const Profile = () => {
                       Preferred Language
                     </Label>
                     <Select disabled={!isEditing} defaultValue="hindi">
-                      <SelectTrigger id="language" className="text-gray-900">
+                      <SelectTrigger id="language">
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent>
@@ -297,7 +290,7 @@ const Profile = () => {
                     id="address" 
                     defaultValue="123, Karol Bagh, New Delhi - 110005, India" 
                     disabled={!isEditing}
-                    className="min-h-20 text-gray-900 placeholder-gray-400 border-gray-300"
+                    className="min-h-20"
                   />
                 </div>
                 
@@ -329,14 +322,12 @@ const Profile = () => {
             </Card>
             
             <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
-              <div className="flex justify-between items-center mb-4 overflow-x-auto">
+              <div className="flex justify-between items-center mb-4">
                 <TabsList className="w-full md:w-auto">
                   <TabsTrigger value="skills">Skills & Experience</TabsTrigger>
                   <TabsTrigger value="education">Education</TabsTrigger>
                   <TabsTrigger value="preferences">Job Preferences</TabsTrigger>
                   <TabsTrigger value="documents">Documents</TabsTrigger>
-                  <TabsTrigger value="resume">Resume</TabsTrigger>
-                  <TabsTrigger value="voice">Voice Profile</TabsTrigger>
                 </TabsList>
                 
                 <div className="hidden md:block">
@@ -365,14 +356,6 @@ const Profile = () => {
               
               <TabsContent value="documents" className="mt-0">
                 <ProfileDocumentWallet />
-              </TabsContent>
-              
-              <TabsContent value="resume" className="mt-0">
-                <ResumeBuilder />
-              </TabsContent>
-              
-              <TabsContent value="voice" className="mt-0">
-                <VoiceProfile />
               </TabsContent>
             </Tabs>
           </div>
