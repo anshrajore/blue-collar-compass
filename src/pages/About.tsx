@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -173,42 +172,42 @@ const About = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <TeamMember 
-            name="Vikram Patel"
+            name="Ansh Rajore"
             role="Founder & CEO"
             bio="Former HR executive with 15+ years of experience in workforce management."
           />
           <TeamMember 
-            name="Priya Sharma"
+            name="Tanvi Diwakar"
             role="Chief Technology Officer"
             bio="Tech entrepreneur with expertise in AI and mobile platform development."
           />
           <TeamMember 
-            name="Rajesh Kumar"
+            name="Nikhil Patil"
             role="Head of Operations"
             bio="Operations expert who previously managed large-scale manufacturing workforce."
           />
           <TeamMember 
-            name="Anjali Singh"
+            name="Neha Patil"
             role="Chief Impact Officer"
             bio="Social entrepreneur focused on creating sustainable employment opportunities."
           />
           <TeamMember 
-            name="Suresh Reddy"
+            name="Darshan"
             role="Director of Partnerships"
             bio="Building strategic relationships with employers, NGOs and government agencies."
           />
           <TeamMember 
-            name="Meera Prakash"
+            name="Vedant Lokhande"
             role="Head of Skill Development"
             bio="Education specialist with a passion for vocational training and upskilling."
           />
           <TeamMember 
-            name="Arjun Malhotra"
+            name="Ashish Gaikawad"
             role="Chief Financial Officer"
             bio="Financial strategist with experience in scaling social impact ventures."
           />
           <TeamMember 
-            name="Deepak Verma"
+            name="Pratamesh Tiwari"
             role="Director of Marketing"
             bio="Expert in reaching diverse audiences through innovative marketing strategies."
           />

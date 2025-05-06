@@ -19,7 +19,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Filter, MapPin } from 'lucide-react';
+import { Filter, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +34,10 @@ const JobListings = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState<any>({});
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -55,13 +59,18 @@ const JobListings = () => {
         job.category.toLowerCase() === category.toLowerCase()
       );
       setFilteredJobs(filtered);
+      setActiveFilters({ ...activeFilters, categories: [category] });
     } else if (allJobs.length > 0) {
       setFilteredJobs(allJobs);
     }
   }, [location, allJobs]);
 
-  const fetchJobs = async () => {
-    setIsLoading(true);
+  const fetchJobs = async (loadMore = false) => {
+    setIsLoading(!loadMore);
+    if (loadMore) {
+      setLoadingMore(true);
+    }
+    
     try {
       const { data, error } = await supabase
         .from('jobs')
@@ -81,7 +90,8 @@ const JobListings = () => {
           employer_profiles(company_name)
         `)
         .eq('status', 'active')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(loadMore ? page * 10 : 0, (loadMore ? page + 1 : 1) * 10 - 1);
 
       if (error) throw error;
 
@@ -98,8 +108,18 @@ const JobListings = () => {
           isUrgent: job.is_urgent,
           isVerified: job.is_verified
         }));
-        setAllJobs(formattedJobs);
-        setFilteredJobs(formattedJobs);
+        
+        if (loadMore) {
+          // If we're loading more jobs, append them to existing jobs
+          setAllJobs(prev => [...prev, ...formattedJobs]);
+          setFilteredJobs(prev => [...prev, ...formattedJobs]);
+          setPage(prev => prev + 1);
+          setHasMore(formattedJobs.length === 10);
+        } else {
+          // First load
+          setAllJobs(formattedJobs);
+          setFilteredJobs(formattedJobs);
+        }
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -110,6 +130,7 @@ const JobListings = () => {
       });
     } finally {
       setIsLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -152,7 +173,7 @@ const JobListings = () => {
       );
     }
     
-    setFilteredJobs(filtered);
+    applyAllFilters(filtered, { ...activeFilters, searchQuery: query, searchLocation: location });
   };
 
   const handleSortChange = (value: string) => {
@@ -197,8 +218,58 @@ const JobListings = () => {
   };
 
   const handleFilterChange = (filters: any) => {
-    console.log('Filters applied:', filters);
-    // In a real app, this would filter the jobs based on the selected filters
+    setActiveFilters({ ...activeFilters, ...filters });
+    applyAllFilters(allJobs, { ...activeFilters, ...filters });
+  };
+
+  const applyAllFilters = (jobs: JobProps[], filters: any) => {
+    let filtered = [...jobs];
+    
+    // Category filter
+    if (filters.categories && filters.categories.length > 0) {
+      filtered = filtered.filter(job => 
+        filters.categories.includes(job.category)
+      );
+    }
+    
+    // Job Type filter
+    if (filters.jobTypes && filters.jobTypes.length > 0) {
+      filtered = filtered.filter(job => 
+        filters.jobTypes.includes(job.jobType)
+      );
+    }
+    
+    // Salary Range filter
+    if (filters.salaryRange) {
+      filtered = filtered.filter(job => {
+        const minSalary = parseInt(job.salary.split(' - ')[0].replace(/,/g, ''));
+        return minSalary >= filters.salaryRange[0] && minSalary <= filters.salaryRange[1];
+      });
+    }
+    
+    // Location filter
+    if (filters.location) {
+      filtered = filtered.filter(job => 
+        job.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+    
+    // Search query
+    if (filters.searchQuery) {
+      filtered = filtered.filter(job => 
+        job.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) || 
+        job.category.toLowerCase().includes(filters.searchQuery.toLowerCase())
+      );
+    }
+    
+    // Search location
+    if (filters.searchLocation) {
+      filtered = filtered.filter(job => 
+        job.location.toLowerCase().includes(filters.searchLocation.toLowerCase())
+      );
+    }
+    
+    setFilteredJobs(filtered);
   };
   
   const handleApplyJob = async (jobId: string) => {
@@ -258,6 +329,17 @@ const JobListings = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters({});
+    setSearchQuery('');
+    setSearchLocation('');
+    setFilteredJobs(allJobs);
+  };
+
+  const loadMoreJobs = () => {
+    fetchJobs(true);
   };
 
   return (
@@ -329,6 +411,7 @@ const JobListings = () => {
             
             {isLoading ? (
               <div className="text-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
                 <p>Loading jobs...</p>
               </div>
             ) : filteredJobs.length > 0 ? (
@@ -345,15 +428,26 @@ const JobListings = () => {
               <div className="text-center py-20">
                 <h3 className="text-xl font-medium mb-2">No jobs found</h3>
                 <p className="text-muted-foreground mb-6">Try adjusting your search or filters to find more jobs</p>
-                <Button onClick={() => handleSearch('', '')}>
+                <Button onClick={handleClearFilters}>
                   Clear Filters
                 </Button>
               </div>
             )}
 
-            {filteredJobs.length > 0 && (
+            {filteredJobs.length > 0 && hasMore && (
               <div className="mt-8 flex justify-center">
-                <Button variant="outline">Load More Jobs</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={loadMoreJobs}
+                  disabled={loadingMore}
+                  className="min-w-[200px]"
+                >
+                  {loadingMore ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...</>
+                  ) : (
+                    'Load More Jobs'
+                  )}
+                </Button>
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 
 export interface JobProps {
@@ -32,9 +32,9 @@ const JobCard = ({
   onApply
 }: JobProps) => {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
       <CardContent className="p-6">
-        <div className="flex flex-col">
+        <div className="flex flex-col h-full">
           <div className="flex justify-between items-start">
             <h3 className="text-lg font-medium mb-1 hover:text-blue-600 transition-colors">
               {title}
@@ -55,7 +55,7 @@ const JobCard = ({
           
           <p className="text-muted-foreground mb-4">{company}</p>
           
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2 mb-4 flex-grow">
             <div className="flex items-center text-sm">
               <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
               <span>{location}</span>
@@ -72,7 +72,7 @@ const JobCard = ({
             </div>
           </div>
           
-          <div className="flex justify-between items-center pt-2">
+          <div className="flex justify-between items-center pt-2 mt-auto">
             <div className="font-medium">₹{salary}</div>
             <Button 
               size="sm" 
