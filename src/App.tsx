@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import PostJob from "./pages/PostJob";
+import Dashboard from "./pages/Dashboard";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => {
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/post-job" element={<PostJob />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

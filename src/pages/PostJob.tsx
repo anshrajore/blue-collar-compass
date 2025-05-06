@@ -23,17 +23,24 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, Save, Eye, ArrowRight } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Mic, Save, Eye, ArrowRight, Upload, MapPin, Plus, Trash } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { StyledInput } from '@/components/ui/styled-input';
 
+// Updated job categories for blue collar jobs
 const jobCategories = [
   "Construction", "Transportation", "Hospitality", "Manufacturing", 
-  "Security", "Cleaning", "Retail", "Agriculture", "Healthcare"
+  "Security", "Cleaning", "Retail", "Agriculture", "Healthcare", "Warehouse",
+  "Factory Work", "Plumbing", "Electrical Work", "Carpentry", "Painting",
+  "Gardening", "Delivery", "Loading/Unloading", "Housekeeping"
 ];
 
 const jobTypes = ["Full-time", "Part-time", "Contract", "Daily-wage"];
+const workShifts = ["Day shift", "Night shift", "Rotational shift", "Morning shift", "Evening shift"];
 const educationLevels = ["None", "Primary (5th)", "Middle (8th)", "High School (10th)", "Higher Secondary (12th)", "ITI", "Diploma"];
 const languages = ["English", "Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Bengali", "Marathi", "Gujarati"];
 const states = [
@@ -54,22 +61,44 @@ const daysOfWeek = [
   { id: "sun", label: "Sun" },
 ];
 
+interface Facility {
+  name: string;
+  icon: string;
+}
+
+const facilities: Facility[] = [
+  { name: "Accommodation", icon: "🏠" },
+  { name: "Food", icon: "🍱" },
+  { name: "Transportation", icon: "🚌" },
+  { name: "Insurance", icon: "🏥" },
+  { name: "PF/ESI", icon: "💰" },
+  { name: "Training", icon: "📚" },
+  { name: "Uniform", icon: "👕" },
+  { name: "Mobile Allowance", icon: "📱" },
+];
+
 const PostJob = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const [jobPostType, setJobPostType] = useState<'standard' | 'blueCollar'>('blueCollar');
   const [formData, setFormData] = useState({
     title: '',
     jobType: '',
     category: '',
+    workShift: '',
+    numPositions: 1,
     pincode: '',
     state: '',
     city: '',
+    area: '',
     address: '',
     salaryPeriod: 'monthly',
     salaryMin: 10000,
     salaryMax: 20000,
+    overtimePay: false,
     incentives: '',
+    providedFacilities: [] as string[],
     shiftStart: '',
     shiftEnd: '',
     workDays: [] as string[],
@@ -77,6 +106,8 @@ const PostJob = () => {
     specificStartDate: '',
     minEducation: '',
     experienceMonths: 0,
+    minAge: 18,
+    maxAge: 50,
     languages: [] as string[],
     physicalRequirements: '',
     certifications: '',
@@ -85,16 +116,29 @@ const PostJob = () => {
     contactName: '',
     contactPhone: '',
     contactEmail: '',
+    companyLogo: '',
+    siteImages: [] as string[],
+    siteVideo: '',
     isHighlighted: false
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<any[]>([]);
+  const [showDraftsList, setShowDraftsList] = useState(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
+    });
+  };
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: parseInt(value) || 0
     });
   };
 
@@ -169,6 +213,90 @@ const PostJob = () => {
     return true;
   };
 
+  const handleSaveDraft = () => {
+    // In a real application, you would save this to the database
+    const draftId = Date.now().toString();
+    const draft = {
+      id: draftId,
+      title: formData.title || "Untitled Draft",
+      date: new Date().toLocaleDateString(),
+      data: formData
+    };
+    
+    setSavedDrafts([...savedDrafts, draft]);
+    
+    toast({
+      title: "Draft saved",
+      description: "Your job posting has been saved as a draft",
+    });
+  };
+
+  const handleLoadDraft = (draft: any) => {
+    setFormData(draft.data);
+    setShowDraftsList(false);
+    
+    toast({
+      title: "Draft loaded",
+      description: "Your draft has been loaded successfully",
+    });
+  };
+
+  const handleDeleteDraft = (id: string) => {
+    setSavedDrafts(savedDrafts.filter(draft => draft.id !== id));
+    
+    toast({
+      title: "Draft deleted",
+      description: "Your draft has been deleted",
+    });
+  };
+
+  const handleDuplicateJob = async () => {
+    // Create a copy of the current job with a new title
+    setFormData({
+      ...formData,
+      title: `${formData.title} (Copy)`,
+    });
+    
+    toast({
+      title: "Job duplicated",
+      description: "You can now edit and post the duplicated job",
+    });
+  };
+
+  const handleFileUpload = (name: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    // In a real application, you would upload the file to a storage service
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const fileURL = URL.createObjectURL(file);
+      
+      if (name === 'siteImages') {
+        setFormData({
+          ...formData,
+          siteImages: [...formData.siteImages, fileURL]
+        });
+      } else {
+        setFormData({
+          ...formData,
+          [name]: fileURL
+        });
+      }
+      
+      toast({
+        title: "File uploaded",
+        description: `${file.name} has been uploaded successfully`,
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedImages = [...formData.siteImages];
+    updatedImages.splice(index, 1);
+    setFormData({
+      ...formData,
+      siteImages: updatedImages
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -207,37 +335,35 @@ const PostJob = () => {
         return;
       }
 
-      // Create job listing
+      // Create job listing - fix the type issue by not passing an array
       const { data, error } = await supabase
         .from('jobs')
-        .insert([
-          {
-            employer_id: session.user.id,
-            title: formData.title,
-            job_type: formData.jobType,
-            category: formData.category,
-            description: formData.description,
-            location_pincode: formData.pincode,
-            location_state: formData.state,
-            location_city: formData.city,
-            location_address: formData.address,
-            salary_min: formData.salaryMin,
-            salary_max: formData.salaryMax,
-            salary_period: formData.salaryPeriod,
-            incentives: formData.incentives,
-            shift_start: formData.shiftStart,
-            shift_end: formData.shiftEnd,
-            work_days: formData.workDays,
-            start_date: formData.startDate === 'immediate' ? new Date() : formData.specificStartDate,
-            min_education: formData.minEducation,
-            min_experience_months: formData.experienceMonths,
-            languages_required: formData.languages,
-            physical_requirements: formData.physicalRequirements,
-            certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
-            is_highlighted: formData.isHighlighted,
-            status: 'active'
-          }
-        ])
+        .insert({
+          employer_id: session.user.id,
+          title: formData.title,
+          job_type: formData.jobType,
+          category: formData.category,
+          description: formData.description,
+          location_pincode: formData.pincode,
+          location_state: formData.state,
+          location_city: formData.city,
+          location_address: formData.address,
+          salary_min: formData.salaryMin,
+          salary_max: formData.salaryMax,
+          salary_period: formData.salaryPeriod,
+          incentives: formData.incentives,
+          shift_start: formData.shiftStart,
+          shift_end: formData.shiftEnd,
+          work_days: formData.workDays,
+          start_date: formData.startDate === 'immediate' ? new Date().toISOString().split('T')[0] : formData.specificStartDate,
+          min_education: formData.minEducation,
+          min_experience_months: formData.experienceMonths,
+          languages_required: formData.languages,
+          physical_requirements: formData.physicalRequirements,
+          certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
+          is_highlighted: formData.isHighlighted,
+          status: 'active'
+        })
         .select();
       
       if (error) {
@@ -263,15 +389,15 @@ const PostJob = () => {
   };
   
   const renderSaveButton = () => (
-    <Button variant="outline" onClick={() => 
-      toast({
-        title: "Draft saved",
-        description: "Your job posting has been saved as a draft",
-      })
-    }>
-      <Save className="w-4 h-4 mr-2" />
-      Save Draft
-    </Button>
+    <div className="flex gap-2">
+      <Button variant="outline" onClick={handleSaveDraft}>
+        <Save className="w-4 h-4 mr-2" />
+        Save Draft
+      </Button>
+      <Button variant="outline" onClick={() => setShowDraftsList(!showDraftsList)}>
+        {showDraftsList ? "Hide Drafts" : "Load Draft"}
+      </Button>
+    </div>
   );
 
   const stepTitles = [
@@ -284,7 +410,7 @@ const PostJob = () => {
   return (
     <Layout>
       <div className="container py-8 px-4 md:py-12">
-        <h1 className="text-3xl font-bold mb-8 text-center">Post a Job</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">Post a Blue Collar Job</h1>
         
         <div className="mb-8">
           <div className="flex justify-between mb-2">
@@ -308,11 +434,49 @@ const PostJob = () => {
           </div>
         </div>
 
+        {/* Drafts List */}
+        {showDraftsList && savedDrafts.length > 0 && (
+          <Card className="max-w-3xl mx-auto mb-6">
+            <CardHeader>
+              <CardTitle>Saved Drafts</CardTitle>
+              <CardDescription>Select a draft to continue editing</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {savedDrafts.map(draft => (
+                  <div key={draft.id} className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50">
+                    <div>
+                      <p className="font-medium">{draft.title}</p>
+                      <p className="text-sm text-muted-foreground">Saved on {draft.date}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleLoadDraft(draft)}>
+                        Load
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteDraft(draft.id)}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {showDraftsList && savedDrafts.length === 0 && (
+          <Card className="max-w-3xl mx-auto mb-6">
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">No saved drafts found.</p>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="max-w-3xl mx-auto">
           <CardHeader>
             <CardTitle>{stepTitles[currentStep]}</CardTitle>
             <CardDescription>
-              {currentStep === 0 && "Provide basic information about the job opening"}
+              {currentStep === 0 && "Provide basic information about the blue collar job opening"}
               {currentStep === 1 && "Where is the job located and what's the compensation?"}
               {currentStep === 2 && "Specify work schedule and job requirements"}
               {currentStep === 3 && "Add your company details and contact information"}
@@ -323,17 +487,15 @@ const PostJob = () => {
               {/* Step 1: Job Details */}
               {currentStep === 0 && (
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Job Title <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="title"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleTextChange}
-                      placeholder="e.g. Experienced Plumber"
-                      className="text-gray-900 placeholder-gray-400 border-gray-300"
-                    />
-                  </div>
+                  <StyledInput
+                    label="Job Title"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleTextChange}
+                    placeholder="e.g. Warehouse Loader, Electrician"
+                    required
+                  />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -371,6 +533,38 @@ const PostJob = () => {
                     </div>
                   </div>
                   
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="workShift">Work Shift <span className="text-red-500">*</span></Label>
+                      <Select 
+                        value={formData.workShift} 
+                        onValueChange={(value) => handleSelectChange('workShift', value)}
+                      >
+                        <SelectTrigger className="text-gray-900">
+                          <SelectValue placeholder="Select work shift" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workShifts.map(shift => (
+                            <SelectItem key={shift} value={shift}>{shift}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="numPositions">Number of Positions <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="numPositions"
+                        name="numPositions"
+                        type="number"
+                        min="1"
+                        value={formData.numPositions}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 placeholder-gray-400 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
                   <div>
                     <Label htmlFor="description">Job Description</Label>
                     <div className="flex items-center space-x-2 mb-2">
@@ -387,7 +581,7 @@ const PostJob = () => {
                       name="description"
                       value={formData.description}
                       onChange={handleTextChange}
-                      placeholder="Describe the job responsibilities, expectations, and ideal candidate..."
+                      placeholder="Describe job responsibilities, working conditions, safety requirements, etc."
                       rows={5}
                       className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
@@ -398,19 +592,7 @@ const PostJob = () => {
               {/* Step 2: Location & Salary */}
               {currentStep === 1 && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="pincode">Pincode</Label>
-                      <Input 
-                        id="pincode"
-                        name="pincode"
-                        value={formData.pincode}
-                        onChange={handleTextChange}
-                        placeholder="e.g. 110001"
-                        className="text-gray-900 placeholder-gray-400 border-gray-300"
-                      />
-                    </div>
-                    
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="state">State <span className="text-red-500">*</span></Label>
                       <Select 
@@ -427,9 +609,7 @@ const PostJob = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
                     <div>
                       <Label htmlFor="city">City <span className="text-red-500">*</span></Label>
                       <Input 
@@ -443,25 +623,55 @@ const PostJob = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="address">Address/Landmark</Label>
+                      <Label htmlFor="pincode">Pincode</Label>
                       <Input 
-                        id="address"
-                        name="address"
-                        value={formData.address}
+                        id="pincode"
+                        name="pincode"
+                        value={formData.pincode}
                         onChange={handleTextChange}
-                        placeholder="e.g. Near Railway Station"
+                        placeholder="e.g. 110001"
                         className="text-gray-900 placeholder-gray-400 border-gray-300"
                       />
                     </div>
                   </div>
                   
                   <div>
+                    <Label htmlFor="area">Area/Locality</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input 
+                        id="area"
+                        name="area"
+                        value={formData.area}
+                        onChange={handleTextChange}
+                        placeholder="e.g. Andheri East"
+                        className="text-gray-900 placeholder-gray-400 border-gray-300"
+                      />
+                      <Button type="button" variant="outline" size="icon">
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="address">Detailed Address/Landmark</Label>
+                    <Input 
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleTextChange}
+                      placeholder="e.g. Near Railway Station, Behind City Mall"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
                     <Label>Salary Range</Label>
                     <Tabs value={formData.salaryPeriod} onValueChange={(value) => handleSelectChange('salaryPeriod', value)}>
-                      <TabsList className="grid grid-cols-3 mb-4">
-                        <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                        <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                      <TabsList className="grid grid-cols-4 mb-4">
+                        <TabsTrigger value="hourly">Hourly</TabsTrigger>
                         <TabsTrigger value="daily">Daily</TabsTrigger>
+                        <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                        <TabsTrigger value="monthly">Monthly</TabsTrigger>
                       </TabsList>
                     </Tabs>
                     
@@ -480,16 +690,56 @@ const PostJob = () => {
                     </div>
                   </div>
                   
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox 
+                      id="overtimePay"
+                      checked={formData.overtimePay}
+                      onCheckedChange={(checked) => handleCheckboxChange('overtimePay', !!checked)}
+                    />
+                    <div>
+                      <Label htmlFor="overtimePay">Overtime Pay Available</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Workers will be compensated for extra hours
+                      </p>
+                    </div>
+                  </div>
+                  
                   <div>
-                    <Label htmlFor="incentives">Incentives or Bonuses (Optional)</Label>
+                    <Label htmlFor="incentives">Bonuses or Perks (Optional)</Label>
                     <Input 
                       id="incentives"
                       name="incentives"
                       value={formData.incentives}
                       onChange={handleTextChange}
-                      placeholder="e.g. Performance bonus, accommodation provided"
+                      placeholder="e.g. Performance bonus, tips, festival bonus"
                       className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
+                  </div>
+                  
+                  <div>
+                    <Label className="mb-2 block">Facilities Provided</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {facilities.map((facility) => (
+                        <div
+                          key={facility.name}
+                          className={`border rounded-md p-3 cursor-pointer transition-colors ${
+                            formData.providedFacilities.includes(facility.name)
+                              ? 'bg-primary/10 border-primary'
+                              : 'hover:bg-muted'
+                          }`}
+                          onClick={() => handleMultiSelectChange(
+                            'providedFacilities',
+                            facility.name,
+                            !formData.providedFacilities.includes(facility.name)
+                          )}
+                        >
+                          <div className="flex gap-2 items-center">
+                            <span className="text-xl">{facility.icon}</span>
+                            <span className="text-sm">{facility.name}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -544,30 +794,21 @@ const PostJob = () => {
                   
                   <div>
                     <Label>Start Date</Label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <RadioGroup 
+                      value={formData.startDate} 
+                      onValueChange={(value) => handleSelectChange('startDate', value)}
+                      className="flex flex-col space-y-1 mt-1"
+                    >
                       <div className="flex items-center space-x-2">
-                        <input 
-                          type="radio" 
-                          id="immediate" 
-                          name="startDate" 
-                          value="immediate"
-                          checked={formData.startDate === 'immediate'}
-                          onChange={handleTextChange}
-                        />
+                        <RadioGroupItem value="immediate" id="immediate" />
                         <Label htmlFor="immediate">Immediate Joining</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <input 
-                          type="radio" 
-                          id="specific" 
-                          name="startDate" 
-                          value="specific"
-                          checked={formData.startDate === 'specific'}
-                          onChange={handleTextChange}
-                        />
+                        <RadioGroupItem value="specific" id="specific" />
                         <Label htmlFor="specific">Specific Date</Label>
                       </div>
-                    </div>
+                    </RadioGroup>
+                    
                     {formData.startDate === 'specific' && (
                       <Input 
                         id="specificStartDate"
@@ -606,7 +847,35 @@ const PostJob = () => {
                         type="number"
                         min="0"
                         value={formData.experienceMonths}
-                        onChange={handleTextChange}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="minAge">Minimum Age</Label>
+                      <Input 
+                        id="minAge"
+                        name="minAge"
+                        type="number"
+                        min="18"
+                        value={formData.minAge}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="maxAge">Maximum Age</Label>
+                      <Input 
+                        id="maxAge"
+                        name="maxAge"
+                        type="number"
+                        min={formData.minAge}
+                        value={formData.maxAge}
+                        onChange={handleNumberChange}
                         className="text-gray-900 border-gray-300"
                       />
                     </div>
@@ -637,19 +906,19 @@ const PostJob = () => {
                       name="physicalRequirements"
                       value={formData.physicalRequirements}
                       onChange={handleTextChange}
-                      placeholder="e.g. Ability to lift 20kg"
+                      placeholder="e.g. Ability to lift 20kg, stand for 8 hours"
                       className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="certifications">Required Certifications (comma separated)</Label>
+                    <Label htmlFor="certifications">Required Certifications or Licenses</Label>
                     <Input 
                       id="certifications"
                       name="certifications"
                       value={formData.certifications}
                       onChange={handleTextChange}
-                      placeholder="e.g. Electrician License, Safety Certification"
+                      placeholder="e.g. Driving License, Electrician License, Safety Training"
                       className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
                   </div>
@@ -684,7 +953,7 @@ const PostJob = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="contactPhone">Contact Phone <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="contactPhone">Contact Phone / WhatsApp <span className="text-red-500">*</span></Label>
                     <Input 
                       id="contactPhone"
                       name="contactPhone"
@@ -703,9 +972,141 @@ const PostJob = () => {
                       type="email"
                       value={formData.contactEmail}
                       onChange={handleTextChange}
-                      placeholder="e.g. contact@abcconstruction.com"
+                      placeholder="e.g. contact@example.com"
                       className="text-gray-900 placeholder-gray-400 border-gray-300"
                     />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="companyLogo">Company Logo (Optional)</Label>
+                    <div className="mt-2 flex flex-col items-start gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full cursor-pointer"
+                        onClick={() => document.getElementById('logoUpload')?.click()}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Logo
+                      </Button>
+                      <input
+                        id="logoUpload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload('companyLogo', e)}
+                        className="hidden"
+                      />
+                      
+                      {formData.companyLogo && (
+                        <div className="relative border rounded-md p-2 w-full">
+                          <img 
+                            src={formData.companyLogo} 
+                            alt="Company Logo" 
+                            className="h-20 object-contain mx-auto" 
+                          />
+                          <Button 
+                            type="button" 
+                            variant="destructive" 
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => setFormData({...formData, companyLogo: ''})}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="siteImages">Workplace Photos (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Upload photos of the work environment to help job seekers understand the workplace
+                    </p>
+                    <div className="mt-2 flex flex-col items-start gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full cursor-pointer"
+                        onClick={() => document.getElementById('imageUpload')?.click()}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Images
+                      </Button>
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleFileUpload('siteImages', e)}
+                        className="hidden"
+                      />
+                      
+                      {formData.siteImages.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                          {formData.siteImages.map((image, index) => (
+                            <div key={index} className="relative border rounded-md p-2">
+                              <img 
+                                src={image} 
+                                alt={`Site Image ${index + 1}`} 
+                                className="w-full h-24 object-cover rounded" 
+                              />
+                              <Button 
+                                type="button" 
+                                variant="destructive" 
+                                size="sm"
+                                className="absolute top-2 right-2"
+                                onClick={() => removeImage(index)}
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="siteVideo">Workplace Video (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Upload a short video to showcase the work environment
+                    </p>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full cursor-pointer"
+                      onClick={() => document.getElementById('videoUpload')?.click()}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Video
+                    </Button>
+                    <input
+                      id="videoUpload"
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => handleFileUpload('siteVideo', e)}
+                      className="hidden"
+                    />
+                    
+                    {formData.siteVideo && (
+                      <div className="mt-4 relative border rounded-md p-2">
+                        <video 
+                          src={formData.siteVideo} 
+                          controls 
+                          className="w-full rounded" 
+                        />
+                        <Button 
+                          type="button" 
+                          variant="destructive" 
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => setFormData({...formData, siteVideo: ''})}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex items-center space-x-2 pt-2">
@@ -715,9 +1116,9 @@ const PostJob = () => {
                       onCheckedChange={(checked) => handleCheckboxChange('isHighlighted', !!checked)}
                     />
                     <div>
-                      <Label htmlFor="isHighlighted">Highlight This Job (Premium)</Label>
+                      <Label htmlFor="isHighlighted">Featured Job Listing (Premium)</Label>
                       <p className="text-sm text-muted-foreground">
-                        Make your job stand out and reach more candidates (additional charges apply)
+                        Highlight your job to get more visibility (additional charges apply)
                       </p>
                     </div>
                   </div>
@@ -758,10 +1159,17 @@ const PostJob = () => {
                   <Eye className="mr-2 h-4 w-4" />
                   Preview
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDuplicateJob}
+                >
+                  Duplicate
+                </Button>
                 <Button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="bg-nayidisha-blue hover:bg-nayidisha-blue-600"
+                  className="bg-primary hover:opacity-90"
                 >
                   {isSubmitting ? "Posting..." : "Post Job"}
                 </Button>
@@ -769,6 +1177,46 @@ const PostJob = () => {
             )}
           </CardFooter>
         </Card>
+
+        {currentStep === stepTitles.length - 1 && (
+          <div className="max-w-3xl mx-auto mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Job Dashboard</CardTitle>
+                <CardDescription>
+                  Track applications and manage your job postings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-4 justify-between">
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Active Jobs</span>
+                  </div>
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Applications</span>
+                  </div>
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Interviews</span>
+                  </div>
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Hired</span>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-2">Recent Applicants</h3>
+                  <div className="text-center py-8 text-muted-foreground">
+                    No applicants yet for this job posting.
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </Layout>
   );
