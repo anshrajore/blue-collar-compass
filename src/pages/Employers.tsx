@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +26,12 @@ import {
 } from 'lucide-react';
 
 const Employers = () => {
+  const navigate = useNavigate();
+  
+  const handlePostJob = () => {
+    navigate('/post-job');
+  };
+  
   return (
     <Layout>
       <div className="bg-gradient-to-r from-nayidisha-blue-50 to-nayidisha-blue-100 py-16">
@@ -41,7 +46,11 @@ const Employers = () => {
                 NayiDisha connects you with pre-vetted candidates who match your requirements.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-nayidisha-blue hover:bg-nayidisha-blue-600">
+                <Button 
+                  size="lg" 
+                  className="bg-nayidisha-blue hover:bg-nayidisha-blue-600"
+                  onClick={handlePostJob}
+                >
                   Post a Job
                 </Button>
                 <Button size="lg" variant="outline">
@@ -207,7 +216,11 @@ const Employers = () => {
                 Post your first job today and start receiving applications from qualified candidates.
               </p>
               <div className="flex gap-4">
-                <Button size="lg" className="bg-white text-nayidisha-blue hover:bg-gray-100">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-nayidisha-blue hover:bg-gray-100"
+                  onClick={handlePostJob}
+                >
                   Post a Job Now
                 </Button>
                 <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
