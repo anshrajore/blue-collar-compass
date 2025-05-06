@@ -1,88 +1,73 @@
-# Blue Collar Compass
+# Welcome to your Lovable project
 
-A job matching platform for blue-collar workers, featuring Google Sheets integration for user data management.
+## Project info
 
-## Features
+**URL**: https://lovable.dev/projects/184db688-4fbd-49f3-ae1a-4381d2eca369
 
-- User registration and data management
-- Google Sheets integration for data storage
-- Search and update functionality
-- Data validation and error handling
+## How can I edit this code?
 
-## Setup
+There are several ways of editing your application.
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/blue-collar-compass.git
-cd blue-collar-compass
+**Use Lovable**
+
+Simply visit the [Lovable Project](https://lovable.dev/projects/184db688-4fbd-49f3-ae1a-4381d2eca369) and start prompting.
+
+Changes made via Lovable will be committed automatically to this repo.
+
+**Use your preferred IDE**
+
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+Follow these steps:
+
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+**Edit a file directly in GitHub**
 
-3. Set up Google Sheets API:
-   - Create a Google Cloud Project
-   - Enable Google Sheets API
-   - Create a service account
-   - Download credentials as JSON
-   - Share your Google Sheet with the service account email
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-4. Configure environment variables:
-   Create a `.env` file in the project root:
-   ```
-   GOOGLE_SHEETS_ID=your_spreadsheet_id_here
-   GOOGLE_SERVICE_EMAIL=your_service_account_email@project.iam.gserviceaccount.com
-   GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
-   ```
+**Use GitHub Codespaces**
 
-## Usage
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-1. Run the test script:
-```bash
-npm test
-```
+## What technologies are used for this project?
 
-2. Use in your application:
-```javascript
-const GoogleSheetsManager = require('./integrations/google_sheets');
+This project is built with:
 
-// Initialize
-const sheetsManager = new GoogleSheetsManager(process.env.GOOGLE_SHEETS_ID);
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-// Save user
-const result = await sheetsManager.saveUserRegistration(userData);
+## How can I deploy this project?
 
-// Search users
-const searchResults = await sheetsManager.searchUsers('query');
+Simply open [Lovable](https://lovable.dev/projects/184db688-4fbd-49f3-ae1a-4381d2eca369) and click on Share -> Publish.
 
-// Update user
-const updateResult = await sheetsManager.updateUser('email', updates);
-```
+## Can I connect a custom domain to my Lovable project?
 
-## Project Structure
+Yes, you can!
 
-```
-blue-collar-compass/
-├── src/
-│   ├── integrations/
-│   │   └── google_sheets.js
-│   └── test_google_sheets.js
-├── .env
-├── .gitignore
-├── package.json
-└── README.md
-```
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

@@ -43,7 +43,7 @@ const JobCard = ({
             {title}
           </CardTitle>
           {isUrgent && (
-            <Badge className="bg-nayidisha-orange/10 text-nayidisha-orange border-nayidisha-orange">
+            <Badge variant="outline" className="bg-nayidisha-orange/10 text-nayidisha-orange border-nayidisha-orange">
               Urgent
             </Badge>
           )}
@@ -57,10 +57,10 @@ const JobCard = ({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-2 text-sm">
-          <Badge className="font-normal">
+          <Badge variant="secondary" className="font-normal">
             {jobType}
           </Badge>
-          <Badge className="font-normal">
+          <Badge variant="secondary" className="font-normal">
             {category}
           </Badge>
         </div>

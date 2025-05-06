@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -206,40 +207,37 @@ const PostJob = () => {
         return;
       }
 
-      // Convert any Date objects to strings
-      const startDate = formData.startDate === 'immediate' 
-        ? new Date().toISOString()
-        : formData.specificStartDate;
-
-      // Create job listing - fix: pass a single object instead of an array
+      // Create job listing
       const { data, error } = await supabase
         .from('jobs')
-        .insert({
-          employer_id: session.user.id,
-          title: formData.title,
-          job_type: formData.jobType,
-          category: formData.category,
-          description: formData.description,
-          location_pincode: formData.pincode,
-          location_state: formData.state,
-          location_city: formData.city,
-          location_address: formData.address,
-          salary_min: formData.salaryMin,
-          salary_max: formData.salaryMax,
-          salary_period: formData.salaryPeriod,
-          incentives: formData.incentives,
-          shift_start: formData.shiftStart,
-          shift_end: formData.shiftEnd,
-          work_days: formData.workDays,
-          start_date: startDate,
-          min_education: formData.minEducation,
-          min_experience_months: formData.experienceMonths,
-          languages_required: formData.languages,
-          physical_requirements: formData.physicalRequirements,
-          certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
-          is_highlighted: formData.isHighlighted,
-          status: 'active'
-        })
+        .insert([
+          {
+            employer_id: session.user.id,
+            title: formData.title,
+            job_type: formData.jobType,
+            category: formData.category,
+            description: formData.description,
+            location_pincode: formData.pincode,
+            location_state: formData.state,
+            location_city: formData.city,
+            location_address: formData.address,
+            salary_min: formData.salaryMin,
+            salary_max: formData.salaryMax,
+            salary_period: formData.salaryPeriod,
+            incentives: formData.incentives,
+            shift_start: formData.shiftStart,
+            shift_end: formData.shiftEnd,
+            work_days: formData.workDays,
+            start_date: formData.startDate === 'immediate' ? new Date() : formData.specificStartDate,
+            min_education: formData.minEducation,
+            min_experience_months: formData.experienceMonths,
+            languages_required: formData.languages,
+            physical_requirements: formData.physicalRequirements,
+            certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
+            is_highlighted: formData.isHighlighted,
+            status: 'active'
+          }
+        ])
         .select();
       
       if (error) {
