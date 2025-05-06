@@ -1,11 +1,8 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin } from "lucide-react";
-import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 
 export interface JobProps {
   id: string;
@@ -18,71 +15,75 @@ export interface JobProps {
   category: string;
   isUrgent?: boolean;
   isVerified?: boolean;
+  onApply?: (id: string) => void;
 }
 
-const JobCard = ({ 
-  id, 
-  title, 
-  company, 
-  location, 
-  salary, 
-  postedDate, 
-  jobType, 
+const JobCard = ({
+  id,
+  title,
+  company,
+  location,
+  salary,
+  postedDate,
+  jobType,
   category,
   isUrgent = false,
-  isVerified = true
+  isVerified = false,
+  onApply
 }: JobProps) => {
   return (
-    <Card className={cn(
-      "overflow-hidden border transition-all card-hover", 
-      isUrgent ? "border-nayidisha-orange/40 bg-nayidisha-orange/5" : ""
-    )}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold line-clamp-1">
-            {title}
-          </CardTitle>
-          {isUrgent && (
-            <Badge variant="outline" className="bg-nayidisha-orange/10 text-nayidisha-orange border-nayidisha-orange">
-              Urgent
-            </Badge>
-          )}
-        </div>
-        <CardDescription className="flex items-center gap-1">
-          {company}
-          {isVerified && (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-nayidisha-blue"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
-          )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Badge variant="secondary" className="font-normal">
-            {jobType}
-          </Badge>
-          <Badge variant="secondary" className="font-normal">
-            {category}
-          </Badge>
-        </div>
-        
-        <div className="flex items-center text-muted-foreground text-sm">
-          <MapPin size={16} className="mr-1" />
-          <span className="line-clamp-1">{location}</span>
-        </div>
-        
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center text-muted-foreground">
-            <Calendar size={16} className="mr-1" />
-            <span>Posted {postedDate}</span>
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex flex-col">
+          <div className="flex justify-between items-start">
+            <h3 className="text-lg font-medium mb-1 hover:text-blue-600 transition-colors">
+              {title}
+            </h3>
+            <div className="flex space-x-2">
+              {isUrgent && (
+                <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 flex items-center">
+                  <AlertTriangle className="h-3 w-3 mr-1" /> Urgent
+                </Badge>
+              )}
+              {isVerified && (
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center">
+                  <CheckCircle className="h-3 w-3 mr-1" /> Verified
+                </Badge>
+              )}
+            </div>
           </div>
-          <span className="font-medium text-nayidisha-blue">₹{salary}</span>
+          
+          <p className="text-muted-foreground mb-4">{company}</p>
+          
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center text-sm">
+              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{location}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Briefcase className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{jobType}</span>
+              <span className="mx-2">•</span>
+              <span>{category}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>Posted {postedDate}</span>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center pt-2">
+            <div className="font-medium">₹{salary}</div>
+            <Button 
+              size="sm" 
+              className="bg-nayidisha-blue hover:bg-nayidisha-blue-600"
+              onClick={() => onApply && onApply(id)}
+            >
+              Apply Now
+            </Button>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="pt-2">
-        <Button asChild className="w-full btn-primary">
-          <Link to={`/jobs/${id}`}>View Details</Link>
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

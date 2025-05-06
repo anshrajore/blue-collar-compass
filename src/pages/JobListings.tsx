@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import SearchBar from '@/components/SearchBar';
 import FilterSidebar from '@/components/FilterSidebar';
@@ -20,109 +20,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Filter, MapPin } from 'lucide-react';
-
-// Mock data for job listings
-const allJobs: JobProps[] = [
-  {
-    id: '1',
-    title: 'Plumber for Residential Project',
-    company: 'BrightBuild Construction',
-    location: 'Delhi, India',
-    salary: '15,000 - 20,000/month',
-    postedDate: '2 days ago',
-    jobType: 'Full-time',
-    category: 'Plumbing',
-    isUrgent: true,
-    isVerified: true
-  },
-  {
-    id: '2',
-    title: 'Experienced Electrician',
-    company: 'PowerTech Solutions',
-    location: 'Mumbai, Maharashtra',
-    salary: '18,000 - 25,000/month',
-    postedDate: '1 day ago',
-    jobType: 'Full-time',
-    category: 'Electrical',
-    isVerified: true
-  },
-  {
-    id: '3',
-    title: 'Carpenter for Furniture Workshop',
-    company: 'WoodCraft Interiors',
-    location: 'Bengaluru, Karnataka',
-    salary: '16,000 - 22,000/month',
-    postedDate: '3 days ago',
-    jobType: 'Full-time',
-    category: 'Carpentry',
-    isVerified: true
-  },
-  {
-    id: '4',
-    title: 'Driver for Delivery Services',
-    company: 'SpeedEx Logistics',
-    location: 'Hyderabad, Telangana',
-    salary: '14,000 - 18,000/month',
-    postedDate: '5 days ago',
-    jobType: 'Full-time',
-    category: 'Driving',
-    isUrgent: true,
-    isVerified: true
-  },
-  {
-    id: '5',
-    title: 'Security Guard for Corporate Office',
-    company: 'SecureForce Services',
-    location: 'Pune, Maharashtra',
-    salary: '12,000 - 15,000/month',
-    postedDate: '4 days ago',
-    jobType: 'Full-time',
-    category: 'Security',
-    isVerified: true
-  },
-  {
-    id: '6',
-    title: 'Tailor for Fashion Studio',
-    company: 'TrendyThreads Fashion',
-    location: 'Jaipur, Rajasthan',
-    salary: '14,000 - 18,000/month',
-    postedDate: '3 days ago',
-    jobType: 'Full-time',
-    category: 'Tailoring',
-    isVerified: true
-  },
-  {
-    id: '7',
-    title: 'Part-time House Cleaner',
-    company: 'CleanHome Services',
-    location: 'Delhi, India',
-    salary: '8,000 - 10,000/month',
-    postedDate: '1 day ago',
-    jobType: 'Part-time',
-    category: 'Housekeeping',
-    isUrgent: true,
-    isVerified: true
-  },
-  {
-    id: '8',
-    title: 'Cook for Restaurant',
-    company: 'Spice Junction',
-    location: 'Kolkata, West Bengal',
-    salary: '15,000 - 20,000/month',
-    postedDate: '6 days ago',
-    jobType: 'Full-time',
-    category: 'Cooking',
-    isVerified: true
-  },
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from "@/hooks/use-toast";
 
 const JobListings = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
-  const [filteredJobs, setFilteredJobs] = useState<JobProps[]>(allJobs);
+  const [filteredJobs, setFilteredJobs] = useState<JobProps[]>([]);
+  const [allJobs, setAllJobs] = useState<JobProps[]>([]);
   const [sortBy, setSortBy] = useState('recent');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -131,19 +42,96 @@ const JobListings = () => {
   }, []);
 
   useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  useEffect(() => {
     // Extract query parameters
     const params = new URLSearchParams(location.search);
     const category = params.get('category');
     
-    if (category) {
+    if (category && allJobs.length > 0) {
       const filtered = allJobs.filter(job => 
         job.category.toLowerCase() === category.toLowerCase()
       );
       setFilteredJobs(filtered);
-    } else {
+    } else if (allJobs.length > 0) {
       setFilteredJobs(allJobs);
     }
-  }, [location]);
+  }, [location, allJobs]);
+
+  const fetchJobs = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select(`
+          id,
+          title,
+          job_type,
+          category,
+          location_city,
+          location_state,
+          salary_min,
+          salary_max,
+          salary_period,
+          created_at,
+          is_urgent,
+          is_verified,
+          employer_profiles(company_name)
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedJobs: JobProps[] = data.map(job => ({
+          id: job.id,
+          title: job.title,
+          company: job.employer_profiles?.company_name || 'Unknown Company',
+          location: `${job.location_city}, ${job.location_state}`,
+          salary: `${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}/${job.salary_period || 'month'}`,
+          postedDate: formatPostedDate(new Date(job.created_at)),
+          jobType: job.job_type,
+          category: job.category,
+          isUrgent: job.is_urgent,
+          isVerified: job.is_verified
+        }));
+        setAllJobs(formattedJobs);
+        setFilteredJobs(formattedJobs);
+      }
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      toast({
+        title: "Error loading jobs",
+        description: "Could not load jobs. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatPostedDate = (date: Date) => {
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays <= 7) {
+      return `${diffDays} days ago`;
+    } else if (diffDays <= 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      return `${months} month${months > 1 ? 's' : ''} ago`;
+    }
+  };
 
   const handleSearch = (query: string, location: string) => {
     setSearchQuery(query);
@@ -173,21 +161,35 @@ const JobListings = () => {
     
     switch (value) {
       case 'recent':
-        // This is just a mock sorting - in a real app, we'd use actual timestamps
-        sorted = sorted.sort((a, b) => 
-          parseInt(a.postedDate) - parseInt(b.postedDate)
-        );
+        sorted = [...allJobs].sort((a, b) => {
+          const dateA = a.postedDate.includes('day') ? 
+            parseInt(a.postedDate) : 
+            a.postedDate.includes('week') ? 
+              parseInt(a.postedDate) * 7 : 
+              parseInt(a.postedDate) * 30;
+          
+          const dateB = b.postedDate.includes('day') ? 
+            parseInt(b.postedDate) : 
+            b.postedDate.includes('week') ? 
+              parseInt(b.postedDate) * 7 : 
+              parseInt(b.postedDate) * 30;
+          
+          return dateA - dateB;
+        });
         break;
       case 'salary-high':
-        // In a real app, we'd parse the salary values properly
-        sorted = sorted.sort((a, b) => 
-          parseInt(b.salary) - parseInt(a.salary)
-        );
+        sorted = [...filteredJobs].sort((a, b) => {
+          const salaryA = parseInt(a.salary.split(' - ')[1]);
+          const salaryB = parseInt(b.salary.split(' - ')[1]);
+          return salaryB - salaryA;
+        });
         break;
       case 'salary-low':
-        sorted = sorted.sort((a, b) => 
-          parseInt(a.salary) - parseInt(b.salary)
-        );
+        sorted = [...filteredJobs].sort((a, b) => {
+          const salaryA = parseInt(a.salary.split(' - ')[0]);
+          const salaryB = parseInt(b.salary.split(' - ')[0]);
+          return salaryA - salaryB;
+        });
         break;
     }
     
@@ -197,6 +199,65 @@ const JobListings = () => {
   const handleFilterChange = (filters: any) => {
     console.log('Filters applied:', filters);
     // In a real app, this would filter the jobs based on the selected filters
+  };
+  
+  const handleApplyJob = async (jobId: string) => {
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to apply for jobs",
+          variant: "destructive"
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      // Check if the user has already applied
+      const { data: existingApplication, error: checkError } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('job_id', jobId)
+        .eq('applicant_id', session.user.id)
+        .single();
+        
+      if (existingApplication) {
+        toast({
+          title: "Already applied",
+          description: "You have already applied for this job",
+          variant: "default"
+        });
+        return;
+      }
+      
+      // Create application
+      const { data, error } = await supabase
+        .from('applications')
+        .insert({
+          job_id: jobId,
+          applicant_id: session.user.id,
+          status: 'applied'
+        })
+        .select();
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Application submitted",
+        description: "Your job application has been submitted successfully!",
+      });
+      
+    } catch (error: any) {
+      console.error('Error applying for job:', error);
+      toast({
+        title: "Application failed",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -266,10 +327,18 @@ const JobListings = () => {
             
             <Separator className="mb-6" />
             
-            {filteredJobs.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-20">
+                <p>Loading jobs...</p>
+              </div>
+            ) : filteredJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredJobs.map((job) => (
-                  <JobCard key={job.id} {...job} />
+                  <JobCard 
+                    key={job.id} 
+                    {...job} 
+                    onApply={() => handleApplyJob(job.id)} 
+                  />
                 ))}
               </div>
             ) : (
