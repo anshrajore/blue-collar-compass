@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -13,110 +12,125 @@ import { WavyBackground } from '@/components/Animation/WavyBackground';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // Mock data for job listings
-const featuredJobs: JobProps[] = [
-  {
-    id: '1',
-    title: 'Plumber for Residential Project',
-    company: 'BrightBuild Construction',
-    location: 'Delhi, India',
-    salary: '15,000 - 20,000/month',
-    postedDate: '2 days ago',
-    jobType: 'Full-time',
-    category: 'Plumbing',
-    isUrgent: true,
-    isVerified: true
-  },
-  {
-    id: '2',
-    title: 'Experienced Electrician',
-    company: 'PowerTech Solutions',
-    location: 'Mumbai, Maharashtra',
-    salary: '18,000 - 25,000/month',
-    postedDate: '1 day ago',
-    jobType: 'Full-time',
-    category: 'Electrical',
-    isVerified: true
-  },
-  {
-    id: '3',
-    title: 'Carpenter for Furniture Workshop',
-    company: 'WoodCraft Interiors',
-    location: 'Bengaluru, Karnataka',
-    salary: '16,000 - 22,000/month',
-    postedDate: '3 days ago',
-    jobType: 'Full-time',
-    category: 'Carpentry',
-    isVerified: true
-  },
-  {
-    id: '4',
-    title: 'Driver for Delivery Services',
-    company: 'SpeedEx Logistics',
-    location: 'Hyderabad, Telangana',
-    salary: '14,000 - 18,000/month',
-    postedDate: '5 days ago',
-    jobType: 'Full-time',
-    category: 'Driving',
-    isUrgent: true,
-    isVerified: true
-  }
-];
+const featuredJobs: JobProps[] = [{
+  id: '1',
+  title: 'Plumber for Residential Project',
+  company: 'BrightBuild Construction',
+  location: 'Delhi, India',
+  salary: '15,000 - 20,000/month',
+  postedDate: '2 days ago',
+  jobType: 'Full-time',
+  category: 'Plumbing',
+  isUrgent: true,
+  isVerified: true
+}, {
+  id: '2',
+  title: 'Experienced Electrician',
+  company: 'PowerTech Solutions',
+  location: 'Mumbai, Maharashtra',
+  salary: '18,000 - 25,000/month',
+  postedDate: '1 day ago',
+  jobType: 'Full-time',
+  category: 'Electrical',
+  isVerified: true
+}, {
+  id: '3',
+  title: 'Carpenter for Furniture Workshop',
+  company: 'WoodCraft Interiors',
+  location: 'Bengaluru, Karnataka',
+  salary: '16,000 - 22,000/month',
+  postedDate: '3 days ago',
+  jobType: 'Full-time',
+  category: 'Carpentry',
+  isVerified: true
+}, {
+  id: '4',
+  title: 'Driver for Delivery Services',
+  company: 'SpeedEx Logistics',
+  location: 'Hyderabad, Telangana',
+  salary: '14,000 - 18,000/month',
+  postedDate: '5 days ago',
+  jobType: 'Full-time',
+  category: 'Driving',
+  isUrgent: true,
+  isVerified: true
+}];
 
 // Job categories with icons
-const categories = [
-  { name: 'Plumbing', icon: '🔧', count: 245 },
-  { name: 'Electrical', icon: '⚡', count: 312 },
-  { name: 'Carpentry', icon: '🪚', count: 178 },
-  { name: 'Masonry', icon: '🧱', count: 156 },
-  { name: 'Driving', icon: '🚗', count: 289 },
-  { name: 'Housekeeping', icon: '🧹', count: 201 },
-  { name: 'Security', icon: '🔒', count: 134 },
-  { name: 'Cooking', icon: '🍳', count: 167 },
-  { name: 'Tailoring', icon: '🧵', count: 119 },
-];
+const categories = [{
+  name: 'Plumbing',
+  icon: '🔧',
+  count: 245
+}, {
+  name: 'Electrical',
+  icon: '⚡',
+  count: 312
+}, {
+  name: 'Carpentry',
+  icon: '🪚',
+  count: 178
+}, {
+  name: 'Masonry',
+  icon: '🧱',
+  count: 156
+}, {
+  name: 'Driving',
+  icon: '🚗',
+  count: 289
+}, {
+  name: 'Housekeeping',
+  icon: '🧹',
+  count: 201
+}, {
+  name: 'Security',
+  icon: '🔒',
+  count: 134
+}, {
+  name: 'Cooking',
+  icon: '🍳',
+  count: 167
+}, {
+  name: 'Tailoring',
+  icon: '🧵',
+  count: 119
+}];
 
 // Success stories
-const successStories = [
-  {
-    id: '1',
-    name: 'Rajesh Kumar',
-    job: 'Electrician',
-    company: 'Metro Construction',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop',
-    story: 'After struggling to find work for months, NayiDisha helped me secure a job with Metro Construction. My income has doubled and I now have job security.',
-  },
-  {
-    id: '2',
-    name: 'Priya Singh',
-    job: 'Tailor',
-    company: 'Fashion Threads',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&auto=format&fit=crop',
-    story: 'The voice assistant on NayiDisha made it easy for me to find tailoring jobs without having to type. I now work at Fashion Threads with a good salary.',
-  },
-  {
-    id: '3',
-    name: 'Mohammed Siddiqui',
-    job: 'Plumber',
-    company: 'WaterWorks Solutions',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&h=100&auto=format&fit=crop',
-    story: 'NayiDisha found me a plumbing job that matched my skills perfectly. The notifications keep me updated on new opportunities in my area.',
-  }
-];
-
+const successStories = [{
+  id: '1',
+  name: 'Rajesh Kumar',
+  job: 'Electrician',
+  company: 'Metro Construction',
+  image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop',
+  story: 'After struggling to find work for months, NayiDisha helped me secure a job with Metro Construction. My income has doubled and I now have job security.'
+}, {
+  id: '2',
+  name: 'Priya Singh',
+  job: 'Tailor',
+  company: 'Fashion Threads',
+  image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&auto=format&fit=crop',
+  story: 'The voice assistant on NayiDisha made it easy for me to find tailoring jobs without having to type. I now work at Fashion Threads with a good salary.'
+}, {
+  id: '3',
+  name: 'Mohammed Siddiqui',
+  job: 'Plumber',
+  company: 'WaterWorks Solutions',
+  image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&h=100&auto=format&fit=crop',
+  story: 'NayiDisha found me a plumbing job that matched my skills perfectly. The notifications keep me updated on new opportunities in my area.'
+}];
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   const handleSearch = (query: string, location: string) => {
     setSearchQuery(query);
     setSearchLocation(location);
     console.log(`Searching for: ${query} in ${location}`);
     // In a real app, this would trigger a search API call
   };
-
-  return (
-    <Layout>
+  return <Layout>
       {/* Hero Section with WavyBackground */}
       <WavyBackground className="relative py-20 px-4 bg-nayidisha-blue text-white">
         <div className="container mx-auto">
@@ -135,7 +149,7 @@ const Index = () => {
                     <Link to="/auth">Get Hired</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                    <Link to={user ? "/post-job" : "/auth"}>Post a Job</Link>
+                    <Link to={user ? "/post-job" : "/auth"} className="make the text color black ">Post a Job</Link>
                   </Button>
                 </div>
 
@@ -156,15 +170,9 @@ const Index = () => {
                   </div>
                   <div className="flex flex-wrap justify-center gap-2 text-sm">
                     <span>Popular:</span>
-                    {['Electrician', 'Plumber', 'Driver', 'Carpenter'].map((term) => (
-                      <button 
-                        key={term} 
-                        className="bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors"
-                        onClick={() => handleSearch(term, '')}
-                      >
+                    {['Electrician', 'Plumber', 'Driver', 'Carpenter'].map(term => <button key={term} className="bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors" onClick={() => handleSearch(term, '')}>
                         {term}
-                      </button>
-                    ))}
+                      </button>)}
                   </div>
                 </div>
               </div>
@@ -185,11 +193,9 @@ const Index = () => {
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredJobs.map((job) => (
-              <AnimatedCard key={job.id} className="h-full">
+            {featuredJobs.map(job => <AnimatedCard key={job.id} className="h-full">
                 <JobCard {...job} />
-              </AnimatedCard>
-            ))}
+              </AnimatedCard>)}
           </div>
         </div>
       </section>
@@ -204,18 +210,13 @@ const Index = () => {
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {categories.map((category) => (
-              <AnimatedCard key={category.name} className="h-full">
-                <Link 
-                  to={`/jobs?category=${category.name}`}
-                  className="flex flex-col items-center justify-center p-6 rounded-lg bg-white dark:bg-muted border shadow-sm hover:shadow-md transition-shadow h-full"
-                >
+            {categories.map(category => <AnimatedCard key={category.name} className="h-full">
+                <Link to={`/jobs?category=${category.name}`} className="flex flex-col items-center justify-center p-6 rounded-lg bg-white dark:bg-muted border shadow-sm hover:shadow-md transition-shadow h-full">
                   <span className="text-3xl mb-2">{category.icon}</span>
                   <h3 className="font-medium mb-1">{category.name}</h3>
                   <span className="text-sm text-muted-foreground">{category.count} jobs</span>
                 </Link>
-              </AnimatedCard>
-            ))}
+              </AnimatedCard>)}
           </div>
         </div>
       </section>
@@ -281,15 +282,10 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {successStories.map((story) => (
-              <AnimatedCard key={story.id} className="h-full">
+            {successStories.map(story => <AnimatedCard key={story.id} className="h-full">
                 <div className="bg-white dark:bg-muted p-6 rounded-lg border shadow-sm h-full">
                   <div className="flex items-center mb-4">
-                    <img 
-                      src={story.image} 
-                      alt={story.name} 
-                      className="w-12 h-12 rounded-full object-cover mr-4" 
-                    />
+                    <img src={story.image} alt={story.name} className="w-12 h-12 rounded-full object-cover mr-4" />
                     <div>
                       <h3 className="font-medium">{story.name}</h3>
                       <p className="text-sm text-muted-foreground">{story.job} at {story.company}</p>
@@ -297,8 +293,7 @@ const Index = () => {
                   </div>
                   <p className="italic">{story.story}</p>
                 </div>
-              </AnimatedCard>
-            ))}
+              </AnimatedCard>)}
           </div>
         </div>
       </section>
@@ -352,8 +347,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Index;
