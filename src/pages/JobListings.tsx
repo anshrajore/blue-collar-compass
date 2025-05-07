@@ -22,7 +22,6 @@ import {
 import { Filter, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
-import { sampleJobs } from '@/components/SampleJobs';
 
 const JobListings = () => {
   const location = useLocation();
@@ -73,7 +72,6 @@ const JobListings = () => {
     }
     
     try {
-      // First try to get real jobs from Supabase
       const { data, error } = await supabase
         .from('jobs')
         .select(`
@@ -95,11 +93,10 @@ const JobListings = () => {
         .order('created_at', { ascending: false })
         .range(loadMore ? page * 10 : 0, (loadMore ? page + 1 : 1) * 10 - 1);
 
-      let jobsData = [];
-      
-      if (!error && data && data.length > 0) {
-        // Use real jobs from database
-        jobsData = data.map(job => ({
+      if (error) throw error;
+
+      if (data) {
+        const formattedJobs: JobProps[] = data.map(job => ({
           id: job.id,
           title: job.title,
           company: job.employer_profiles?.company_name || 'Unknown Company',
@@ -111,57 +108,26 @@ const JobListings = () => {
           isUrgent: job.is_urgent,
           isVerified: job.is_verified
         }));
-      } else {
-        // Fallback to sample jobs
-        jobsData = sampleJobs.map(job => ({
-          id: job.id,
-          title: job.title,
-          company: job.company,
-          location: job.location,
-          salary: job.salary,
-          postedDate: job.postedDate,
-          jobType: job.jobType,
-          category: job.category,
-          isUrgent: job.isUrgent,
-          isVerified: job.isVerified
-        }));
-      }
-      
-      if (loadMore) {
-        // If we're loading more jobs, append them to existing jobs
-        setAllJobs(prev => [...prev, ...jobsData]);
-        setFilteredJobs(prev => [...prev, ...jobsData]);
-        setPage(prev => prev + 1);
-        setHasMore(jobsData.length === 10);
-      } else {
-        // First load
-        setAllJobs(jobsData);
-        setFilteredJobs(jobsData);
+        
+        if (loadMore) {
+          // If we're loading more jobs, append them to existing jobs
+          setAllJobs(prev => [...prev, ...formattedJobs]);
+          setFilteredJobs(prev => [...prev, ...formattedJobs]);
+          setPage(prev => prev + 1);
+          setHasMore(formattedJobs.length === 10);
+        } else {
+          // First load
+          setAllJobs(formattedJobs);
+          setFilteredJobs(formattedJobs);
+        }
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);
       toast({
         title: "Error loading jobs",
-        description: "Could not load jobs. Using sample data instead.",
+        description: "Could not load jobs. Please try again later.",
         variant: "destructive"
       });
-      
-      // Fallback to sample jobs if there's an error
-      const jobsData = sampleJobs.map(job => ({
-        id: job.id,
-        title: job.title,
-        company: job.company,
-        location: job.location,
-        salary: job.salary,
-        postedDate: job.postedDate,
-        jobType: job.jobType,
-        category: job.category,
-        isUrgent: job.isUrgent,
-        isVerified: job.isVerified
-      }));
-      
-      setAllJobs(jobsData);
-      setFilteredJobs(jobsData);
     } finally {
       setIsLoading(false);
       setLoadingMore(false);
@@ -217,67 +183,38 @@ const JobListings = () => {
     switch (value) {
       case 'recent':
         sorted = [...allJobs].sort((a, b) => {
-          const dateA = parseDatePriority(a.postedDate);
-          const dateB = parseDatePriority(b.postedDate);
+          const dateA = a.postedDate.includes('day') ? 
+            parseInt(a.postedDate) : 
+            a.postedDate.includes('week') ? 
+              parseInt(a.postedDate) * 7 : 
+              parseInt(a.postedDate) * 30;
+          
+          const dateB = b.postedDate.includes('day') ? 
+            parseInt(b.postedDate) : 
+            b.postedDate.includes('week') ? 
+              parseInt(b.postedDate) * 7 : 
+              parseInt(b.postedDate) * 30;
+          
           return dateA - dateB;
         });
         break;
       case 'salary-high':
         sorted = [...filteredJobs].sort((a, b) => {
-          const salaryA = parseSalary(a.salary, 1);
-          const salaryB = parseSalary(b.salary, 1);
+          const salaryA = parseInt(a.salary.split(' - ')[1]);
+          const salaryB = parseInt(b.salary.split(' - ')[1]);
           return salaryB - salaryA;
         });
         break;
       case 'salary-low':
         sorted = [...filteredJobs].sort((a, b) => {
-          const salaryA = parseSalary(a.salary, 0);
-          const salaryB = parseSalary(b.salary, 0);
+          const salaryA = parseInt(a.salary.split(' - ')[0]);
+          const salaryB = parseInt(b.salary.split(' - ')[0]);
           return salaryA - salaryB;
         });
         break;
     }
     
     setFilteredJobs(sorted);
-  };
-
-  // Helper function to parse dates for sorting
-  const parseDatePriority = (dateString: string) => {
-    if (dateString === 'Today') return 0;
-    if (dateString === 'Yesterday') return 1;
-    
-    if (dateString.includes('day')) {
-      return parseInt(dateString) || 2;
-    }
-    
-    if (dateString.includes('week')) {
-      return (parseInt(dateString) * 7) || 10;
-    }
-    
-    if (dateString.includes('month')) {
-      return (parseInt(dateString) * 30) || 40;
-    }
-    
-    return 100; // For any other format, place at the end
-  };
-  
-  // Helper function to parse salary for sorting
-  const parseSalary = (salaryString: string, index: number) => {
-    try {
-      // Extract the numbers from salary ranges like "20,000 - 30,000/month"
-      const numbers = salaryString.split(' - ');
-      if (numbers.length >= 2) {
-        // Get first or second number based on index
-        const targetNumber = numbers[index];
-        // Remove commas and anything after "/" if it exists
-        const cleanNumber = targetNumber.split('/')[0].replace(/,/g, '');
-        return parseInt(cleanNumber);
-      }
-      return 0;
-    } catch (error) {
-      console.error('Error parsing salary:', error);
-      return 0;
-    }
   };
 
   const handleFilterChange = (filters: any) => {
@@ -303,32 +240,18 @@ const JobListings = () => {
     }
     
     // Salary Range filter
-    if (filters.salaryRange && Array.isArray(filters.salaryRange) && filters.salaryRange.length === 2) {
+    if (filters.salaryRange) {
       filtered = filtered.filter(job => {
-        const minSalary = parseSalary(job.salary, 0);
+        const minSalary = parseInt(job.salary.split(' - ')[0].replace(/,/g, ''));
         return minSalary >= filters.salaryRange[0] && minSalary <= filters.salaryRange[1];
       });
     }
     
-    // State filter
-    if (filters.state) {
+    // Location filter
+    if (filters.location) {
       filtered = filtered.filter(job => 
-        job.location.toLowerCase().includes(filters.state.toLowerCase())
+        job.location.toLowerCase().includes(filters.location.toLowerCase())
       );
-    }
-    
-    // District filter
-    if (filters.district) {
-      filtered = filtered.filter(job => 
-        job.location.toLowerCase().includes(filters.district.toLowerCase())
-      );
-    }
-    
-    // Experience filter
-    if (filters.experience) {
-      // This would need job experience data to be available
-      // For now, we'll just log that this filter was applied
-      console.log('Experience filter applied:', filters.experience);
     }
     
     // Search query
@@ -361,15 +284,6 @@ const JobListings = () => {
           variant: "destructive"
         });
         navigate('/auth');
-        return;
-      }
-      
-      // For sample jobs, we'll just show a success message
-      if (jobId.startsWith('sample')) {
-        toast({
-          title: "Application submitted",
-          description: "Your job application has been submitted successfully! (Sample job)",
-        });
         return;
       }
       

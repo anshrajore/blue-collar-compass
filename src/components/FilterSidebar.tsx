@@ -1,260 +1,260 @@
 
-import React, { useState, useEffect } from 'react';
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
+import { useState, useEffect } from 'react';
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Search, ArrowRight } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from "@/components/ui/separator";
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// India states with corresponding districts
-const statesWithDistricts: { [key: string]: string[] } = {
-  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur', 'Amravati', 'Kolhapur', 'Nanded', 'Jalgaon'],
-  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum', 'Gulbarga', 'Davanagere', 'Shimoga', 'Dharwad', 'Bijapur'],
-  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Tiruppur', 'Erode', 'Vellore'],
-  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Junagadh', 'Gandhinagar', 'Anand'],
-  'Delhi': ['New Delhi', 'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Central Delhi', 'North West Delhi']
+// Job categories for blue collar workers
+const jobCategories = [
+  "Plumbing", "Electrical", "Carpentry", "Masonry", 
+  "Driving", "Housekeeping", "Security", "Cooking", "Tailoring"
+];
+
+const jobTypes = ["Full-time", "Part-time", "Contractual", "Daily Wages", "Gig work"];
+
+const experienceLevels = ["No experience", "Entry-level", "Experienced", "Advanced"];
+
+// States and districts mapping
+const statesAndDistricts = {
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad"],
+  "Karnataka": ["Bengaluru", "Mysuru", "Hubli", "Mangaluru", "Belgaum"],
+  "Delhi": ["New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
+  "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Prayagraj"]
 };
 
-// Categories of blue collar jobs
-const jobCategories = [
-  'Plumbing',
-  'Electrical',
-  'Carpentry',
-  'Masonry',
-  'Driving',
-  'Housekeeping',
-  'Security',
-  'Cooking',
-  'Tailoring',
-  'Factory Work',
-  'Construction',
-  'Farming',
-  'Delivery'
-];
-
-// Job types for blue collar workers
-const jobTypes = [
-  'Full-time',
-  'Part-time',
-  'Contract',
-  'Daily Wages',
-  'Weekly',
-  'Monthly'
-];
+// For type safety
+type StateType = keyof typeof statesAndDistricts;
 
 interface FilterSidebarProps {
-  onFilterChange: (filters: any) => void;
+  onFilterChange?: (filters: any) => void;
+  className?: string;
   isMobile?: boolean;
 }
 
-const FilterSidebar = ({ onFilterChange, isMobile = false }: FilterSidebarProps) => {
+const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSidebarProps) => {
+  const [salaryRange, setSalaryRange] = useState<number[]>([5000, 50000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
-  const [salaryRange, setSalaryRange] = useState<number[]>([0, 50000]);
-  const [selectedState, setSelectedState] = useState<string>('');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+  const [selectedState, setSelectedState] = useState<StateType | "">("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
-  const [experience, setExperience] = useState<number | null>(null);
 
   // Update available districts when state changes
   useEffect(() => {
-    if (selectedState && statesWithDistricts[selectedState]) {
-      setAvailableDistricts(statesWithDistricts[selectedState]);
-      setSelectedDistrict(''); // Reset district when state changes
+    if (selectedState && selectedState in statesAndDistricts) {
+      setAvailableDistricts(statesAndDistricts[selectedState as StateType]);
+      setSelectedDistrict(""); // Reset district when state changes
     } else {
       setAvailableDistricts([]);
-      setSelectedDistrict('');
     }
   }, [selectedState]);
 
+  // Handle category selection
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category) 
+        : [...prev, category]
+    );
+  };
+
+  // Handle job type selection
+  const handleJobTypeChange = (type: string) => {
+    setSelectedJobTypes(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type) 
+        : [...prev, type]
+    );
+  };
+
+  // Handle salary range change
+  const handleSalaryChange = (value: number[]) => {
+    setSalaryRange(value);
+  };
+
   // Apply all filters
-  const applyFilters = () => {
-    onFilterChange({
-      categories: selectedCategories.length > 0 ? selectedCategories : undefined,
-      jobTypes: selectedJobTypes.length > 0 ? selectedJobTypes : undefined,
-      salaryRange: salaryRange[0] > 0 || salaryRange[1] < 50000 ? salaryRange : undefined,
-      state: selectedState || undefined,
-      district: selectedDistrict || undefined,
-      experience: experience || undefined
-    });
+  const handleApplyFilters = () => {
+    if (onFilterChange) {
+      onFilterChange({
+        categories: selectedCategories,
+        jobTypes: selectedJobTypes,
+        salaryRange: salaryRange,
+        location: selectedDistrict ? `${selectedDistrict}, ${selectedState}` : selectedState
+      });
+    }
   };
 
   // Reset all filters
-  const resetFilters = () => {
+  const handleResetFilters = () => {
     setSelectedCategories([]);
     setSelectedJobTypes([]);
-    setSalaryRange([0, 50000]);
-    setSelectedState('');
-    setSelectedDistrict('');
-    setExperience(null);
+    setSalaryRange([5000, 50000]);
+    setSelectedState("");
+    setSelectedDistrict("");
     
-    // Inform parent component about the reset
-    onFilterChange({});
-  };
-
-  // Toggle category selection
-  const toggleCategory = (category: string) => {
-    setSelectedCategories(prevSelected =>
-      prevSelected.includes(category)
-        ? prevSelected.filter(c => c !== category)
-        : [...prevSelected, category]
-    );
-  };
-
-  // Toggle job type selection
-  const toggleJobType = (type: string) => {
-    setSelectedJobTypes(prevSelected =>
-      prevSelected.includes(type)
-        ? prevSelected.filter(t => t !== type)
-        : [...prevSelected, type]
-    );
+    if (onFilterChange) {
+      onFilterChange({});
+    }
   };
 
   return (
-    <div className={`space-y-6 ${isMobile ? 'p-6' : ''}`}>
+    <div className={`${className} space-y-6 p-4 rounded-lg bg-white dark:bg-muted border`}>
       <div>
-        <h3 className="font-semibold mb-3">Job Categories</h3>
-        <div className="space-y-2">
-          {jobCategories.map(category => (
-            <div key={category} className="flex items-center">
-              <Checkbox 
-                id={`category-${category}`}
-                checked={selectedCategories.includes(category)}
-                onCheckedChange={() => toggleCategory(category)}
-              />
-              <label 
-                htmlFor={`category-${category}`}
-                className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {category}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="font-semibold mb-3">Job Type</h3>
-        <div className="space-y-2">
-          {jobTypes.map(type => (
-            <div key={type} className="flex items-center">
-              <Checkbox 
-                id={`type-${type}`}
-                checked={selectedJobTypes.includes(type)}
-                onCheckedChange={() => toggleJobType(type)}
-              />
-              <label 
-                htmlFor={`type-${type}`}
-                className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {type}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="font-semibold mb-3">Location</h3>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label htmlFor="state">State</Label>
-            <Select
-              value={selectedState}
-              onValueChange={setSelectedState}
-            >
-              <SelectTrigger id="state">
-                <SelectValue placeholder="Select state" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(statesWithDistricts).map((state) => (
-                  <SelectItem key={state} value={state}>
-                    {state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="district">District</Label>
-            <Select
-              value={selectedDistrict}
-              onValueChange={setSelectedDistrict}
-              disabled={!selectedState || availableDistricts.length === 0}
-            >
-              <SelectTrigger id="district">
-                <SelectValue placeholder={selectedState ? "Select district" : "First select a state"} />
-              </SelectTrigger>
-              <SelectContent>
-                {availableDistricts.map((district) => (
-                  <SelectItem key={district} value={district}>
-                    {district}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="font-semibold mb-3">Salary Range</h3>
-        <div className="space-y-3">
-          <Slider
-            value={salaryRange}
-            min={0}
-            max={50000}
-            step={1000}
-            onValueChange={setSalaryRange}
-            className="py-4"
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-sm">₹{salaryRange[0].toLocaleString()}</span>
-            <ArrowRight className="h-4 w-4 mx-2" />
-            <span className="text-sm">₹{salaryRange[1].toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="font-semibold mb-3">Experience (Years)</h3>
-        <div className="space-y-2">
-          <Input 
-            type="number" 
-            placeholder="Years of experience" 
-            min="0"
-            value={experience || ''}
-            onChange={(e) => {
-              const value = e.target.value ? parseInt(e.target.value) : null;
-              setExperience(value);
-            }}
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="flex flex-col space-y-2">
-        <Button onClick={applyFilters} className="w-full">
-          <Search className="h-4 w-4 mr-2" />
-          Apply Filters
-        </Button>
-        <Button variant="outline" onClick={resetFilters} className="w-full">
-          Clear All
+        <h3 className="font-semibold text-lg mb-4">Filters</h3>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full mb-4"
+          onClick={handleResetFilters}
+        >
+          Reset Filters
         </Button>
       </div>
+      
+      <Separator />
+      
+      <Accordion type="multiple" defaultValue={["category", "jobType", "location", "experience", "salary"]}>
+        <AccordionItem value="category">
+          <AccordionTrigger className="font-semibold">Job Category</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2 mt-2">
+              {jobCategories.map((category) => (
+                <div key={category} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`category-${category}`} 
+                    checked={selectedCategories.includes(category)}
+                    onCheckedChange={() => handleCategoryChange(category)}
+                  />
+                  <Label htmlFor={`category-${category}`}>{category}</Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="jobType">
+          <AccordionTrigger className="font-semibold">Job Type</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2 mt-2">
+              {jobTypes.map((type) => (
+                <div key={type} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`type-${type}`} 
+                    checked={selectedJobTypes.includes(type)}
+                    onCheckedChange={() => handleJobTypeChange(type)}
+                  />
+                  <Label htmlFor={`type-${type}`}>{type}</Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="location">
+          <AccordionTrigger className="font-semibold">Location</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4 mt-2">
+              <div className="space-y-2">
+                <Label htmlFor="state-select">State</Label>
+                <Select 
+                  value={selectedState} 
+                  onValueChange={(value) => setSelectedState(value as StateType)}
+                >
+                  <SelectTrigger id="state-select">
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(statesAndDistricts).map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedState && (
+                <div className="space-y-2">
+                  <Label htmlFor="district-select">District</Label>
+                  <Select 
+                    value={selectedDistrict} 
+                    onValueChange={setSelectedDistrict}
+                    disabled={!selectedState}
+                  >
+                    <SelectTrigger id="district-select">
+                      <SelectValue placeholder="Select district" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableDistricts.map((district) => (
+                        <SelectItem key={district} value={district}>
+                          {district}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="experience">
+          <AccordionTrigger className="font-semibold">Experience</AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2 mt-2">
+              {experienceLevels.map((level) => (
+                <div key={level} className="flex items-center space-x-2">
+                  <Checkbox id={`level-${level}`} />
+                  <Label htmlFor={`level-${level}`}>{level}</Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="salary">
+          <AccordionTrigger className="font-semibold">Salary Range</AccordionTrigger>
+          <AccordionContent>
+            <div className="mt-6 px-2">
+              <Slider 
+                value={salaryRange}
+                min={0} 
+                max={100000} 
+                step={1000}
+                onValueChange={handleSalaryChange}
+              />
+              <div className="flex justify-between mt-2 text-sm">
+                <span>₹{salaryRange[0].toLocaleString()}</span>
+                <span>₹{salaryRange[1].toLocaleString()}</span>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Button 
+        className="w-full bg-nayidisha-blue hover:bg-nayidisha-blue-600"
+        onClick={handleApplyFilters}
+      >
+        Apply Filters
+      </Button>
     </div>
   );
 };

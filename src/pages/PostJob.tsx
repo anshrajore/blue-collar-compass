@@ -1,965 +1,1221 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import Layout from '@/components/Layout';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/components/AuthContext';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent } from '@/components/ui/card';
-import { Briefcase, MapPin, Calendar, AlertTriangle } from 'lucide-react';
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Mic, Save, Eye, ArrowRight, Upload, MapPin, Plus, Trash } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { StyledInput } from '@/components/ui/styled-input';
 
-const formSchema = z.object({
-  title: z.string().min(5, { message: 'Job title is required' }),
-  job_type: z.string().min(1, { message: 'Job type is required' }),
-  work_shift: z.string().min(1, { message: 'Work shift is required' }),
-  number_of_positions: z.coerce.number().int().positive(),
-  category: z.string().min(1, { message: 'Category is required' }),
-  location_city: z.string().min(1, { message: 'City is required' }),
-  location_state: z.string().min(1, { message: 'State is required' }),
-  location_pincode: z.string().min(6, { message: 'Valid pincode is required' }).max(6),
-  location_address: z.string().optional(),
-  salary_min: z.coerce.number().int().positive(),
-  salary_max: z.coerce.number().int().positive(),
-  salary_period: z.string().min(1, { message: 'Salary period is required' }),
-  has_overtime_pay: z.boolean().optional(),
-  incentives: z.string().optional(),
-  min_education: z.string().optional(),
-  min_experience_months: z.coerce.number().int().min(0),
-  languages_required: z.string().optional(),
-  certifications_required: z.string().optional(),
-  age_min: z.coerce.number().int().positive().optional(),
-  age_max: z.coerce.number().int().positive().optional(),
-  physical_requirements: z.string().optional(),
-  provides_accommodation: z.boolean().optional(),
-  provides_food: z.boolean().optional(),
-  provides_transportation: z.boolean().optional(),
-  provides_insurance: z.boolean().optional(),
-  provides_pf_esi: z.boolean().optional(),
-  description: z.string().min(20, { message: 'Please provide a detailed job description' }),
-  is_urgent: z.boolean().optional(),
-});
-
+// Updated job categories for blue collar jobs
 const jobCategories = [
-  'Plumbing',
-  'Electrical',
-  'Carpentry',
-  'Masonry',
-  'Driving',
-  'Housekeeping',
-  'Security',
-  'Cooking',
-  'Tailoring',
-  'Factory Work',
-  'Construction',
-  'Painting',
-  'Gardening',
-  'Delivery',
-  'Warehouse',
-  'Retail',
-  'Hospitality',
-  'Farming',
-  'Other'
+  "Construction", "Transportation", "Hospitality", "Manufacturing", 
+  "Security", "Cleaning", "Retail", "Agriculture", "Healthcare", "Warehouse",
+  "Factory Work", "Plumbing", "Electrical Work", "Carpentry", "Painting",
+  "Gardening", "Delivery", "Loading/Unloading", "Housekeeping"
 ];
 
-const indiaStates = [
-  'Andhra Pradesh',
-  'Arunachal Pradesh',
-  'Assam',
-  'Bihar',
-  'Chhattisgarh',
-  'Goa',
-  'Gujarat',
-  'Haryana',
-  'Himachal Pradesh',
-  'Jharkhand',
-  'Karnataka',
-  'Kerala',
-  'Madhya Pradesh',
-  'Maharashtra',
-  'Manipur',
-  'Meghalaya',
-  'Mizoram',
-  'Nagaland',
-  'Odisha',
-  'Punjab',
-  'Rajasthan',
-  'Sikkim',
-  'Tamil Nadu',
-  'Telangana',
-  'Tripura',
-  'Uttar Pradesh',
-  'Uttarakhand',
-  'West Bengal'
+const jobTypes = ["Full-time", "Part-time", "Contract", "Daily-wage"];
+const workShifts = ["Day shift", "Night shift", "Rotational shift", "Morning shift", "Evening shift"];
+const educationLevels = ["None", "Primary (5th)", "Middle (8th)", "High School (10th)", "Higher Secondary (12th)", "ITI", "Diploma"];
+const languages = ["English", "Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Bengali", "Marathi", "Gujarati"];
+const states = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
+  "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", 
+  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
+  "Uttarakhand", "West Bengal"
 ];
 
-// Add city-state relationship for districts
-const stateDistricts: { [key: string]: string[] } = {
-  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur', 'Amravati', 'Kolhapur', 'Sangli', 'Satara'],
-  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Gandhinagar', 'Junagadh', 'Anand', 'Bharuch'],
-  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum', 'Gulbarga', 'Davanagere', 'Shimoga', 'Tumkur', 'Bijapur'],
-  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Tiruppur', 'Vellore', 'Erode'],
-  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Allahabad', 'Bareilly', 'Aligarh', 'Moradabad'],
-  'Delhi': ['New Delhi', 'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Central Delhi', 'North West Delhi', 'South West Delhi'],
-  // Add more states and districts as needed
-};
+const daysOfWeek = [
+  { id: "mon", label: "Mon" },
+  { id: "tue", label: "Tue" },
+  { id: "wed", label: "Wed" },
+  { id: "thu", label: "Thu" },
+  { id: "fri", label: "Fri" },
+  { id: "sat", label: "Sat" },
+  { id: "sun", label: "Sun" },
+];
+
+interface Facility {
+  name: string;
+  icon: string;
+}
+
+const facilities: Facility[] = [
+  { name: "Accommodation", icon: "🏠" },
+  { name: "Food", icon: "🍱" },
+  { name: "Transportation", icon: "🚌" },
+  { name: "Insurance", icon: "🏥" },
+  { name: "PF/ESI", icon: "💰" },
+  { name: "Training", icon: "📚" },
+  { name: "Uniform", icon: "👕" },
+  { name: "Mobile Allowance", icon: "📱" },
+];
 
 const PostJob = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [previewData, setPreviewData] = useState<null | any>(null);
-  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: '',
-      job_type: 'Full-time',
-      work_shift: 'Day',
-      number_of_positions: 1,
-      category: '',
-      location_city: '',
-      location_state: '',
-      location_pincode: '',
-      location_address: '',
-      salary_min: 0,
-      salary_max: 0,
-      salary_period: 'month',
-      has_overtime_pay: false,
-      incentives: '',
-      min_education: 'None',
-      min_experience_months: 0,
-      languages_required: '',
-      certifications_required: '',
-      physical_requirements: '',
-      provides_accommodation: false,
-      provides_food: false,
-      provides_transportation: false,
-      provides_insurance: false,
-      provides_pf_esi: false,
-      description: '',
-      is_urgent: false,
-    },
+  const [currentStep, setCurrentStep] = useState(0);
+  const [jobPostType, setJobPostType] = useState<'standard' | 'blueCollar'>('blueCollar');
+  const [formData, setFormData] = useState({
+    title: '',
+    jobType: '',
+    category: '',
+    workShift: '',
+    numPositions: 1,
+    pincode: '',
+    state: '',
+    city: '',
+    area: '',
+    address: '',
+    salaryPeriod: 'monthly',
+    salaryMin: 10000,
+    salaryMax: 20000,
+    overtimePay: false,
+    incentives: '',
+    providedFacilities: [] as string[],
+    shiftStart: '',
+    shiftEnd: '',
+    workDays: [] as string[],
+    startDate: 'immediate',
+    specificStartDate: '',
+    minEducation: '',
+    experienceMonths: 0,
+    minAge: 18,
+    maxAge: 50,
+    languages: [] as string[],
+    physicalRequirements: '',
+    certifications: '',
+    description: '',
+    companyName: '',
+    contactName: '',
+    contactPhone: '',
+    contactEmail: '',
+    companyLogo: '',
+    siteImages: [] as string[],
+    siteVideo: '',
+    isHighlighted: false
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<any[]>([]);
+  const [showDraftsList, setShowDraftsList] = useState(false);
 
-  // Watch the selected state to update districts
-  const selectedState = form.watch('location_state');
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
 
-  useEffect(() => {
-    if (selectedState && stateDistricts[selectedState]) {
-      setAvailableDistricts(stateDistricts[selectedState]);
-      
-      // If current city is not in the new state's districts, reset it
-      const currentCity = form.getValues('location_city');
-      if (currentCity && !stateDistricts[selectedState].includes(currentCity)) {
-        form.setValue('location_city', '');
-      }
-    } else {
-      setAvailableDistricts([]);
-    }
-  }, [selectedState, form]);
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: parseInt(value) || 0
+    });
+  };
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to post a job",
-        variant: "destructive"
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleCheckboxChange = (name: string, checked: boolean) => {
+    setFormData({
+      ...formData,
+      [name]: checked
+    });
+  };
+
+  const handleMultiSelectChange = (name: string, value: string, checked: boolean) => {
+    if (checked) {
+      setFormData({
+        ...formData,
+        [name]: [...formData[name as keyof typeof formData] as string[], value]
       });
-      navigate('/auth');
-      return;
+    } else {
+      setFormData({
+        ...formData,
+        [name]: (formData[name as keyof typeof formData] as string[]).filter(item => item !== value)
+      });
     }
+  };
 
-    setIsLoading(true);
+  const handleSalaryChange = (values: number[]) => {
+    setFormData({
+      ...formData,
+      salaryMin: values[0],
+      salaryMax: values[1]
+    });
+  };
 
-    try {
-      // Format languages and certifications as arrays
-      const languagesArray = data.languages_required 
-        ? data.languages_required.split(',').map(lang => lang.trim())
-        : [];
+  const handleNext = () => {
+    if (validateCurrentStep()) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(currentStep - 1);
+    window.scrollTo(0, 0);
+  };
+
+  const validateCurrentStep = () => {
+    if (currentStep === 0) {
+      if (!formData.title || !formData.jobType || !formData.category) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in all required job details",
+          variant: "destructive"
+        });
+        return false;
+      }
+    } else if (currentStep === 1) {
+      if (!formData.state || !formData.city) {
+        toast({
+          title: "Missing information",
+          description: "Please provide at least the state and city",
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSaveDraft = () => {
+    // In a real application, you would save this to the database
+    const draftId = Date.now().toString();
+    const draft = {
+      id: draftId,
+      title: formData.title || "Untitled Draft",
+      date: new Date().toLocaleDateString(),
+      data: formData
+    };
+    
+    setSavedDrafts([...savedDrafts, draft]);
+    
+    toast({
+      title: "Draft saved",
+      description: "Your job posting has been saved as a draft",
+    });
+  };
+
+  const handleLoadDraft = (draft: any) => {
+    setFormData(draft.data);
+    setShowDraftsList(false);
+    
+    toast({
+      title: "Draft loaded",
+      description: "Your draft has been loaded successfully",
+    });
+  };
+
+  const handleDeleteDraft = (id: string) => {
+    setSavedDrafts(savedDrafts.filter(draft => draft.id !== id));
+    
+    toast({
+      title: "Draft deleted",
+      description: "Your draft has been deleted",
+    });
+  };
+
+  const handleDuplicateJob = async () => {
+    // Create a copy of the current job with a new title
+    setFormData({
+      ...formData,
+      title: `${formData.title} (Copy)`,
+    });
+    
+    toast({
+      title: "Job duplicated",
+      description: "You can now edit and post the duplicated job",
+    });
+  };
+
+  const handleFileUpload = (name: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    // In a real application, you would upload the file to a storage service
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const fileURL = URL.createObjectURL(file);
       
-      const certificationsArray = data.certifications_required
-        ? data.certifications_required.split(',').map(cert => cert.trim())
-        : [];
+      if (name === 'siteImages') {
+        setFormData({
+          ...formData,
+          siteImages: [...formData.siteImages, fileURL]
+        });
+      } else {
+        setFormData({
+          ...formData,
+          [name]: fileURL
+        });
+      }
+      
+      toast({
+        title: "File uploaded",
+        description: `${file.name} has been uploaded successfully`,
+      });
+    }
+  };
 
-      // Prepare job post data
-      const jobData = {
-        employer_id: user.id,
-        title: data.title,
-        description: data.description,
-        job_type: data.job_type,
-        category: data.category,
-        location_city: data.location_city,
-        location_state: data.location_state,
-        location_pincode: data.location_pincode,
-        location_address: data.location_address,
-        salary_min: data.salary_min,
-        salary_max: data.salary_max,
-        salary_period: data.salary_period,
-        incentives: data.incentives,
-        min_education: data.min_education,
-        min_experience_months: data.min_experience_months,
-        languages_required: languagesArray,
-        certifications_required: certificationsArray,
-        physical_requirements: data.physical_requirements,
-        is_urgent: data.is_urgent,
-        status: 'active'
-      };
+  const removeImage = (index: number) => {
+    const updatedImages = [...formData.siteImages];
+    updatedImages.splice(index, 1);
+    setFormData({
+      ...formData,
+      siteImages: updatedImages
+    });
+  };
 
-      // Insert job post into database
-      const { data: newJob, error } = await supabase
-        .from('jobs')
-        .insert(jobData)
-        .select()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateCurrentStep()) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // First check if the user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to post a job",
+          variant: "destructive"
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      // Check if user has an employer profile
+      const { data: employerProfile, error: profileError } = await supabase
+        .from('employer_profiles')
+        .select('id')
+        .eq('id', session.user.id)
         .single();
+        
+      if (profileError || !employerProfile) {
+        toast({
+          title: "Employer profile required",
+          description: "Please complete your employer profile first",
+          variant: "destructive"
+        });
+        navigate('/profile');
+        return;
+      }
 
+      // Create job listing - fix the type issue by not passing an array
+      const { data, error } = await supabase
+        .from('jobs')
+        .insert({
+          employer_id: session.user.id,
+          title: formData.title,
+          job_type: formData.jobType,
+          category: formData.category,
+          description: formData.description,
+          location_pincode: formData.pincode,
+          location_state: formData.state,
+          location_city: formData.city,
+          location_address: formData.address,
+          salary_min: formData.salaryMin,
+          salary_max: formData.salaryMax,
+          salary_period: formData.salaryPeriod,
+          incentives: formData.incentives,
+          shift_start: formData.shiftStart,
+          shift_end: formData.shiftEnd,
+          work_days: formData.workDays,
+          start_date: formData.startDate === 'immediate' ? new Date().toISOString().split('T')[0] : formData.specificStartDate,
+          min_education: formData.minEducation,
+          min_experience_months: formData.experienceMonths,
+          languages_required: formData.languages,
+          physical_requirements: formData.physicalRequirements,
+          certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
+          is_highlighted: formData.isHighlighted,
+          status: 'active'
+        })
+        .select();
+      
       if (error) {
         throw error;
       }
-
+      
       toast({
-        title: "Job Posted Successfully",
-        description: "Your job has been posted and is now live."
+        title: "Job posted successfully!",
+        description: "Your job listing is now live",
       });
-
-      // Navigate directly to job listing page
+      
       navigate('/jobs');
+      
     } catch (error: any) {
-      console.error('Error posting job:', error);
       toast({
-        title: "Error Posting Job",
-        description: error.message || "An error occurred while posting your job",
+        title: "Error posting job",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+  
+  const renderSaveButton = () => (
+    <div className="flex gap-2">
+      <Button variant="outline" onClick={handleSaveDraft}>
+        <Save className="w-4 h-4 mr-2" />
+        Save Draft
+      </Button>
+      <Button variant="outline" onClick={() => setShowDraftsList(!showDraftsList)}>
+        {showDraftsList ? "Hide Drafts" : "Load Draft"}
+      </Button>
+    </div>
+  );
 
-  const handlePreview = () => {
-    setPreviewData(form.getValues());
-  };
-
-  if (!user) {
-    return (
-      <Layout>
-        <div className="container mx-auto py-12 px-4">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center p-12">
-              <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Authentication Required</h2>
-              <p className="text-muted-foreground mb-6 text-center">
-                You need to be signed in to post a job. Please sign in or create an account.
-              </p>
-              <Button onClick={() => navigate('/auth')}>
-                Sign In / Create Account
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
-    );
-  }
+  const stepTitles = [
+    "Job Details",
+    "Location & Salary",
+    "Schedule & Requirements",
+    "Company Info"
+  ];
 
   return (
     <Layout>
-      <div className="container mx-auto py-12 px-4">
+      <div className="container py-8 px-4 md:py-12">
+        <h1 className="text-3xl font-bold mb-8 text-center">Post a Blue Collar Job</h1>
+        
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Post a Blue Collar Job</h1>
-          <p className="text-muted-foreground mt-2">
-            Fill out the form below to create your job listing and find qualified workers
-          </p>
+          <div className="flex justify-between mb-2">
+            {stepTitles.map((title, index) => (
+              <div 
+                key={index} 
+                className={`hidden md:block text-sm ${currentStep >= index ? 'text-primary font-medium' : 'text-muted-foreground'}`}
+              >
+                {title}
+              </div>
+            ))}
+          </div>
+          <div className="w-full bg-muted rounded-full h-2.5 mb-2">
+            <div 
+              className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+              style={{ width: `${(currentStep + 1) / stepTitles.length * 100}%` }}
+            ></div>
+          </div>
+          <div className="text-center text-sm text-muted-foreground">
+            Step {currentStep + 1} of {stepTitles.length}
+          </div>
         </div>
 
-        {previewData ? (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Job Preview</h2>
-              <div className="space-x-4">
-                <Button variant="outline" onClick={() => setPreviewData(null)}>
-                  Edit Job
+        {/* Drafts List */}
+        {showDraftsList && savedDrafts.length > 0 && (
+          <Card className="max-w-3xl mx-auto mb-6">
+            <CardHeader>
+              <CardTitle>Saved Drafts</CardTitle>
+              <CardDescription>Select a draft to continue editing</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {savedDrafts.map(draft => (
+                  <div key={draft.id} className="flex justify-between items-center p-3 border rounded-md hover:bg-muted/50">
+                    <div>
+                      <p className="font-medium">{draft.title}</p>
+                      <p className="text-sm text-muted-foreground">Saved on {draft.date}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleLoadDraft(draft)}>
+                        Load
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteDraft(draft.id)}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {showDraftsList && savedDrafts.length === 0 && (
+          <Card className="max-w-3xl mx-auto mb-6">
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">No saved drafts found.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="max-w-3xl mx-auto">
+          <CardHeader>
+            <CardTitle>{stepTitles[currentStep]}</CardTitle>
+            <CardDescription>
+              {currentStep === 0 && "Provide basic information about the blue collar job opening"}
+              {currentStep === 1 && "Where is the job located and what's the compensation?"}
+              {currentStep === 2 && "Specify work schedule and job requirements"}
+              {currentStep === 3 && "Add your company details and contact information"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Step 1: Job Details */}
+              {currentStep === 0 && (
+                <div className="space-y-4">
+                  <StyledInput
+                    label="Job Title"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleTextChange}
+                    placeholder="e.g. Warehouse Loader, Electrician"
+                    required
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="jobType">Job Type <span className="text-red-500">*</span></Label>
+                      <Select 
+                        value={formData.jobType} 
+                        onValueChange={(value) => handleSelectChange('jobType', value)}
+                      >
+                        <SelectTrigger className="text-gray-900">
+                          <SelectValue placeholder="Select job type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {jobTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
+                      <Select 
+                        value={formData.category} 
+                        onValueChange={(value) => handleSelectChange('category', value)}
+                      >
+                        <SelectTrigger className="text-gray-900">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {jobCategories.map(category => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="workShift">Work Shift <span className="text-red-500">*</span></Label>
+                      <Select 
+                        value={formData.workShift} 
+                        onValueChange={(value) => handleSelectChange('workShift', value)}
+                      >
+                        <SelectTrigger className="text-gray-900">
+                          <SelectValue placeholder="Select work shift" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workShifts.map(shift => (
+                            <SelectItem key={shift} value={shift}>{shift}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="numPositions">Number of Positions <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="numPositions"
+                        name="numPositions"
+                        type="number"
+                        min="1"
+                        value={formData.numPositions}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 placeholder-gray-400 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="description">Job Description</Label>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Button type="button" variant="outline" size="sm">
+                        <Mic className="w-4 h-4 mr-2" />
+                        Voice Record
+                      </Button>
+                      <Button type="button" variant="outline" size="sm">
+                        AI Assistant
+                      </Button>
+                    </div>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleTextChange}
+                      placeholder="Describe job responsibilities, working conditions, safety requirements, etc."
+                      rows={5}
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Step 2: Location & Salary */}
+              {currentStep === 1 && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="state">State <span className="text-red-500">*</span></Label>
+                      <Select 
+                        value={formData.state} 
+                        onValueChange={(value) => handleSelectChange('state', value)}
+                      >
+                        <SelectTrigger className="text-gray-900">
+                          <SelectValue placeholder="Select state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {states.map(state => (
+                            <SelectItem key={state} value={state}>{state}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="city">City <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="city"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleTextChange}
+                        placeholder="e.g. Mumbai"
+                        className="text-gray-900 placeholder-gray-400 border-gray-300"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="pincode">Pincode</Label>
+                      <Input 
+                        id="pincode"
+                        name="pincode"
+                        value={formData.pincode}
+                        onChange={handleTextChange}
+                        placeholder="e.g. 110001"
+                        className="text-gray-900 placeholder-gray-400 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="area">Area/Locality</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input 
+                        id="area"
+                        name="area"
+                        value={formData.area}
+                        onChange={handleTextChange}
+                        placeholder="e.g. Andheri East"
+                        className="text-gray-900 placeholder-gray-400 border-gray-300"
+                      />
+                      <Button type="button" variant="outline" size="icon">
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="address">Detailed Address/Landmark</Label>
+                    <Input 
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleTextChange}
+                      placeholder="e.g. Near Railway Station, Behind City Mall"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label>Salary Range</Label>
+                    <Tabs value={formData.salaryPeriod} onValueChange={(value) => handleSelectChange('salaryPeriod', value)}>
+                      <TabsList className="grid grid-cols-4 mb-4">
+                        <TabsTrigger value="hourly">Hourly</TabsTrigger>
+                        <TabsTrigger value="daily">Daily</TabsTrigger>
+                        <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                        <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    
+                    <div className="mb-8">
+                      <Slider 
+                        defaultValue={[formData.salaryMin, formData.salaryMax]}
+                        max={100000}
+                        step={1000}
+                        onValueChange={handleSalaryChange}
+                        className="my-6"
+                      />
+                      <div className="flex justify-between text-sm">
+                        <span>₹{formData.salaryMin.toLocaleString()}</span>
+                        <span>₹{formData.salaryMax.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox 
+                      id="overtimePay"
+                      checked={formData.overtimePay}
+                      onCheckedChange={(checked) => handleCheckboxChange('overtimePay', !!checked)}
+                    />
+                    <div>
+                      <Label htmlFor="overtimePay">Overtime Pay Available</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Workers will be compensated for extra hours
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="incentives">Bonuses or Perks (Optional)</Label>
+                    <Input 
+                      id="incentives"
+                      name="incentives"
+                      value={formData.incentives}
+                      onChange={handleTextChange}
+                      placeholder="e.g. Performance bonus, tips, festival bonus"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label className="mb-2 block">Facilities Provided</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {facilities.map((facility) => (
+                        <div
+                          key={facility.name}
+                          className={`border rounded-md p-3 cursor-pointer transition-colors ${
+                            formData.providedFacilities.includes(facility.name)
+                              ? 'bg-primary/10 border-primary'
+                              : 'hover:bg-muted'
+                          }`}
+                          onClick={() => handleMultiSelectChange(
+                            'providedFacilities',
+                            facility.name,
+                            !formData.providedFacilities.includes(facility.name)
+                          )}
+                        >
+                          <div className="flex gap-2 items-center">
+                            <span className="text-xl">{facility.icon}</span>
+                            <span className="text-sm">{facility.name}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Step 3: Schedule & Requirements */}
+              {currentStep === 2 && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="shiftStart">Shift Start Time</Label>
+                      <Input 
+                        id="shiftStart"
+                        name="shiftStart"
+                        type="time"
+                        value={formData.shiftStart}
+                        onChange={handleTextChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="shiftEnd">Shift End Time</Label>
+                      <Input 
+                        id="shiftEnd"
+                        name="shiftEnd"
+                        type="time"
+                        value={formData.shiftEnd}
+                        onChange={handleTextChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label>Work Days</Label>
+                    <div className="grid grid-cols-7 gap-2 mt-2">
+                      {daysOfWeek.map((day) => (
+                        <div key={day.id} className="flex items-center justify-center">
+                          <Checkbox 
+                            id={day.id} 
+                            checked={formData.workDays.includes(day.id)}
+                            onCheckedChange={(checked) => 
+                              handleMultiSelectChange('workDays', day.id, !!checked)
+                            }
+                            className="mx-auto"
+                          />
+                          <Label htmlFor={day.id} className="ml-1 text-sm">{day.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label>Start Date</Label>
+                    <RadioGroup 
+                      value={formData.startDate} 
+                      onValueChange={(value) => handleSelectChange('startDate', value)}
+                      className="flex flex-col space-y-1 mt-1"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="immediate" id="immediate" />
+                        <Label htmlFor="immediate">Immediate Joining</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="specific" id="specific" />
+                        <Label htmlFor="specific">Specific Date</Label>
+                      </div>
+                    </RadioGroup>
+                    
+                    {formData.startDate === 'specific' && (
+                      <Input 
+                        id="specificStartDate"
+                        name="specificStartDate"
+                        type="date"
+                        value={formData.specificStartDate}
+                        onChange={handleTextChange}
+                        className="mt-2 text-gray-900 border-gray-300"
+                      />
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="minEducation">Minimum Education</Label>
+                      <Select 
+                        value={formData.minEducation} 
+                        onValueChange={(value) => handleSelectChange('minEducation', value)}
+                      >
+                        <SelectTrigger className="text-gray-900">
+                          <SelectValue placeholder="Select education level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {educationLevels.map(level => (
+                            <SelectItem key={level} value={level}>{level}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="experienceMonths">Experience (months)</Label>
+                      <Input 
+                        id="experienceMonths"
+                        name="experienceMonths"
+                        type="number"
+                        min="0"
+                        value={formData.experienceMonths}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="minAge">Minimum Age</Label>
+                      <Input 
+                        id="minAge"
+                        name="minAge"
+                        type="number"
+                        min="18"
+                        value={formData.minAge}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="maxAge">Maximum Age</Label>
+                      <Input 
+                        id="maxAge"
+                        name="maxAge"
+                        type="number"
+                        min={formData.minAge}
+                        value={formData.maxAge}
+                        onChange={handleNumberChange}
+                        className="text-gray-900 border-gray-300"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label>Languages Required</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                      {languages.map((language) => (
+                        <div key={language} className="flex items-center">
+                          <Checkbox 
+                            id={`lang-${language}`} 
+                            checked={formData.languages.includes(language)}
+                            onCheckedChange={(checked) => 
+                              handleMultiSelectChange('languages', language, !!checked)
+                            }
+                          />
+                          <Label htmlFor={`lang-${language}`} className="ml-2 text-sm">{language}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="physicalRequirements">Physical Requirements</Label>
+                    <Input 
+                      id="physicalRequirements"
+                      name="physicalRequirements"
+                      value={formData.physicalRequirements}
+                      onChange={handleTextChange}
+                      placeholder="e.g. Ability to lift 20kg, stand for 8 hours"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="certifications">Required Certifications or Licenses</Label>
+                    <Input 
+                      id="certifications"
+                      name="certifications"
+                      value={formData.certifications}
+                      onChange={handleTextChange}
+                      placeholder="e.g. Driving License, Electrician License, Safety Training"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Step 4: Company Info */}
+              {currentStep === 3 && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="companyName">Company/Organization Name <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="companyName"
+                      name="companyName"
+                      value={formData.companyName}
+                      onChange={handleTextChange}
+                      placeholder="e.g. ABC Construction"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="contactName">Contact Person Name <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="contactName"
+                      name="contactName"
+                      value={formData.contactName}
+                      onChange={handleTextChange}
+                      placeholder="e.g. Rajesh Kumar"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="contactPhone">Contact Phone / WhatsApp <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="contactPhone"
+                      name="contactPhone"
+                      value={formData.contactPhone}
+                      onChange={handleTextChange}
+                      placeholder="e.g. 9876543210"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="contactEmail">Contact Email (Optional)</Label>
+                    <Input 
+                      id="contactEmail"
+                      name="contactEmail"
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={handleTextChange}
+                      placeholder="e.g. contact@example.com"
+                      className="text-gray-900 placeholder-gray-400 border-gray-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="companyLogo">Company Logo (Optional)</Label>
+                    <div className="mt-2 flex flex-col items-start gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full cursor-pointer"
+                        onClick={() => document.getElementById('logoUpload')?.click()}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Logo
+                      </Button>
+                      <input
+                        id="logoUpload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload('companyLogo', e)}
+                        className="hidden"
+                      />
+                      
+                      {formData.companyLogo && (
+                        <div className="relative border rounded-md p-2 w-full">
+                          <img 
+                            src={formData.companyLogo} 
+                            alt="Company Logo" 
+                            className="h-20 object-contain mx-auto" 
+                          />
+                          <Button 
+                            type="button" 
+                            variant="destructive" 
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => setFormData({...formData, companyLogo: ''})}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="siteImages">Workplace Photos (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Upload photos of the work environment to help job seekers understand the workplace
+                    </p>
+                    <div className="mt-2 flex flex-col items-start gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full cursor-pointer"
+                        onClick={() => document.getElementById('imageUpload')?.click()}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Images
+                      </Button>
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleFileUpload('siteImages', e)}
+                        className="hidden"
+                      />
+                      
+                      {formData.siteImages.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                          {formData.siteImages.map((image, index) => (
+                            <div key={index} className="relative border rounded-md p-2">
+                              <img 
+                                src={image} 
+                                alt={`Site Image ${index + 1}`} 
+                                className="w-full h-24 object-cover rounded" 
+                              />
+                              <Button 
+                                type="button" 
+                                variant="destructive" 
+                                size="sm"
+                                className="absolute top-2 right-2"
+                                onClick={() => removeImage(index)}
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="siteVideo">Workplace Video (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Upload a short video to showcase the work environment
+                    </p>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full cursor-pointer"
+                      onClick={() => document.getElementById('videoUpload')?.click()}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Video
+                    </Button>
+                    <input
+                      id="videoUpload"
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => handleFileUpload('siteVideo', e)}
+                      className="hidden"
+                    />
+                    
+                    {formData.siteVideo && (
+                      <div className="mt-4 relative border rounded-md p-2">
+                        <video 
+                          src={formData.siteVideo} 
+                          controls 
+                          className="w-full rounded" 
+                        />
+                        <Button 
+                          type="button" 
+                          variant="destructive" 
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => setFormData({...formData, siteVideo: ''})}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox 
+                      id="isHighlighted"
+                      checked={formData.isHighlighted}
+                      onCheckedChange={(checked) => handleCheckboxChange('isHighlighted', !!checked)}
+                    />
+                    <div>
+                      <Label htmlFor="isHighlighted">Featured Job Listing (Premium)</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Highlight your job to get more visibility (additional charges apply)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-between flex-wrap gap-2">
+            {currentStep > 0 && (
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={isSubmitting}
+              >
+                Previous
+              </Button>
+            )}
+            {currentStep === 0 && renderSaveButton()}
+            
+            {currentStep < stepTitles.length - 1 ? (
+              <Button onClick={handleNext}>
+                Next
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    toast({
+                      title: "Preview",
+                      description: "This feature is coming soon",
+                    });
+                  }}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
                 </Button>
-                <Button onClick={() => form.handleSubmit(onSubmit)()}>
-                  Post Job
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDuplicateJob}
+                >
+                  Duplicate
+                </Button>
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="bg-primary hover:opacity-90"
+                >
+                  {isSubmitting ? "Posting..." : "Post Job"}
                 </Button>
               </div>
-            </div>
-            
-            <Card className="overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex flex-col space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-semibold">{previewData.title}</h3>
-                    <div className="flex items-center text-muted-foreground mt-2">
-                      <Briefcase className="h-4 w-4 mr-2" />
-                      <span>{previewData.job_type} • {previewData.category}</span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground mt-1">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      <span>
-                        {previewData.location_city}, {previewData.location_state}, {previewData.location_pincode}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground mt-1">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>Posted today</span>
-                    </div>
+            )}
+          </CardFooter>
+        </Card>
+
+        {currentStep === stepTitles.length - 1 && (
+          <div className="max-w-3xl mx-auto mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Job Dashboard</CardTitle>
+                <CardDescription>
+                  Track applications and manage your job postings
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-4 justify-between">
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Active Jobs</span>
                   </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-medium text-lg mb-2">Salary</h4>
-                    <p className="text-lg font-medium">
-                      ₹{previewData.salary_min.toLocaleString()} - ₹{previewData.salary_max.toLocaleString()} per {previewData.salary_period}
-                    </p>
-                    {previewData.has_overtime_pay && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Overtime pay available
-                      </p>
-                    )}
-                    {previewData.incentives && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Additional incentives: {previewData.incentives}
-                      </p>
-                    )}
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Applications</span>
                   </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-medium text-lg mb-2">Job Description</h4>
-                    <p className="whitespace-pre-wrap">{previewData.description}</p>
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Interviews</span>
                   </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-medium text-lg mb-2">Requirements</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                      {previewData.min_education && (
-                        <li>Education: {previewData.min_education}</li>
-                      )}
-                      {previewData.min_experience_months > 0 && (
-                        <li>
-                          Experience: {
-                            previewData.min_experience_months >= 12 
-                              ? `${Math.floor(previewData.min_experience_months / 12)} year(s)` 
-                              : `${previewData.min_experience_months} month(s)`
-                          }
-                        </li>
-                      )}
-                      {previewData.languages_required && (
-                        <li>Languages: {previewData.languages_required}</li>
-                      )}
-                      {previewData.certifications_required && (
-                        <li>Certifications: {previewData.certifications_required}</li>
-                      )}
-                      {previewData.physical_requirements && (
-                        <li>Physical Requirements: {previewData.physical_requirements}</li>
-                      )}
-                    </ul>
+                  <div className="flex flex-col items-center p-4 border rounded-md text-center">
+                    <span className="text-3xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">Hired</span>
                   </div>
+                </div>
 
-                  <Separator />
-
-                  <div>
-                    <h4 className="font-medium text-lg mb-2">Benefits</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {previewData.provides_accommodation && (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 rounded-full bg-green-500 mr-2"></div>
-                          <span>Accommodation</span>
-                        </div>
-                      )}
-                      {previewData.provides_food && (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 rounded-full bg-green-500 mr-2"></div>
-                          <span>Food</span>
-                        </div>
-                      )}
-                      {previewData.provides_transportation && (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 rounded-full bg-green-500 mr-2"></div>
-                          <span>Transportation</span>
-                        </div>
-                      )}
-                      {previewData.provides_insurance && (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 rounded-full bg-green-500 mr-2"></div>
-                          <span>Insurance</span>
-                        </div>
-                      )}
-                      {previewData.provides_pf_esi && (
-                        <div className="flex items-center">
-                          <div className="h-4 w-4 rounded-full bg-green-500 mr-2"></div>
-                          <span>PF/ESI</span>
-                        </div>
-                      )}
-                    </div>
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-2">Recent Applicants</h3>
+                  <div className="text-center py-8 text-muted-foreground">
+                    No applicants yet for this job posting.
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-        ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Basic Job Details */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Basic Job Details</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Title *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Plumber, Electrician, Warehouse Loader" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Category *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select job category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {jobCategories.map((category) => (
-                              <SelectItem key={category} value={category}>{category}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="job_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Type *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select job type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Full-time">Full-time</SelectItem>
-                            <SelectItem value="Part-time">Part-time</SelectItem>
-                            <SelectItem value="Contract">Contract</SelectItem>
-                            <SelectItem value="Daily Wages">Daily Wages</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="work_shift"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Work Shift *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select work shift" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Day">Day</SelectItem>
-                            <SelectItem value="Night">Night</SelectItem>
-                            <SelectItem value="Rotational">Rotational</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="number_of_positions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Number of Positions *</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Job Location */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Job Location</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="location_state"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>State *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select state" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {indiaStates.map((state) => (
-                              <SelectItem key={state} value={state}>{state}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="location_city"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>City/District *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedState}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={selectedState ? "Select city" : "First select a state"} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {availableDistricts.map((city) => (
-                              <SelectItem key={city} value={city}>{city}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="location_pincode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pin Code *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="6-digit pincode" {...field} maxLength={6} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="location_address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Specific address or area" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Compensation */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Compensation</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="salary_min"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Salary *</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="salary_max"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Maximum Salary *</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="salary_period"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Salary Period *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select period" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="hour">Per Hour</SelectItem>
-                            <SelectItem value="day">Per Day</SelectItem>
-                            <SelectItem value="week">Per Week</SelectItem>
-                            <SelectItem value="month">Per Month</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="has_overtime_pay"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Overtime Pay Available
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="incentives"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bonuses or Perks (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="e.g. Meals, Accommodation, Travel Allowance" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Job Requirements */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Job Requirements</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="min_education"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Education Level</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select education level" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="None">No formal education</SelectItem>
-                            <SelectItem value="Primary">Primary School</SelectItem>
-                            <SelectItem value="Secondary">Secondary School</SelectItem>
-                            <SelectItem value="High School">High School</SelectItem>
-                            <SelectItem value="ITI">ITI</SelectItem>
-                            <SelectItem value="Diploma">Diploma</SelectItem>
-                            <SelectItem value="Graduate">Graduate</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="min_experience_months"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Experience Required (in months)</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="languages_required"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Languages Required (comma-separated)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Hindi, English, Marathi" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="certifications_required"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>License/Certification (comma-separated)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Driving License, Electrician License" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="physical_requirements"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Physical Requirements (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Physical abilities required for the job" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Facilities & Benefits */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Facilities & Benefits</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="provides_accommodation"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Accommodation Provided
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="provides_food"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Food Provided
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="provides_transportation"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Transportation Provided
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="provides_insurance"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Insurance Provided
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="provides_pf_esi"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Provident Fund (PF) / ESI Provided
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="is_urgent"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 border-amber-200 bg-amber-50">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Mark as Urgent Hiring
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Job Description */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Job Description</h2>
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Job Description *</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Provide details about job duties, expectations, working conditions"
-                          className="min-h-[200px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="flex justify-end space-x-4 pt-6">
-                <Button type="button" variant="outline" onClick={handlePreview}>
-                  Preview
-                </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Posting...' : 'Post Job'}
-                </Button>
-              </div>
-            </form>
-          </Form>
         )}
       </div>
     </Layout>

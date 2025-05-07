@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash, Plus, Users, Briefcase, Calendar, ArrowUpRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/components/AuthContext';
+import { Eye, Pencil, Trash, Plus, Users, Briefcase, Calendar } from 'lucide-react';
 
 interface JobItemProps {
   id: string;
@@ -158,13 +155,8 @@ const ApplicantCard = ({
 const BlueCollarDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = React.useState("jobs");
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [userJobs, setUserJobs] = React.useState<any[]>([]);
-  const [userApplicants, setUserApplicants] = React.useState<any[]>([]);
   
-  // Sample data - would be replaced by real data from API in production
+  // Sample data - would come from API in real implementation
   const jobs = [
     {
       id: '1',
@@ -205,30 +197,6 @@ const BlueCollarDashboard = () => {
       postedDate: '25 Apr 2023',
       applicantsCount: 0,
       status: 'draft' as const
-    },
-    {
-      id: '6',
-      title: 'Security Guard for Office Building',
-      location: 'Bangalore, Karnataka',
-      postedDate: '12 May 2023',
-      applicantsCount: 3,
-      status: 'active' as const
-    },
-    {
-      id: '7',
-      title: 'Housekeeping Staff for Hotel',
-      location: 'Delhi, Delhi',
-      postedDate: '15 May 2023',
-      applicantsCount: 7,
-      status: 'active' as const
-    },
-    {
-      id: '8',
-      title: 'Gardener for Corporate Campus',
-      location: 'Chennai, Tamil Nadu',
-      postedDate: '9 May 2023', 
-      applicantsCount: 2,
-      status: 'active' as const
     }
   ];
   
@@ -277,104 +245,16 @@ const BlueCollarDashboard = () => {
       experience: 'Fresher',
       status: 'rejected' as const,
       appliedDate: '6 May 2023'
-    },
-    {
-      id: '6',
-      name: 'Vikram Singh',
-      role: 'Security Guard for Office Building',
-      location: 'Bangalore, Karnataka',
-      experience: '4 years',
-      status: 'new' as const,
-      appliedDate: '13 May 2023'
-    },
-    {
-      id: '7',
-      name: 'Meena Kumari',
-      role: 'Housekeeping Staff for Hotel',
-      location: 'Delhi, Delhi',
-      experience: '2 years',
-      status: 'shortlisted' as const,
-      appliedDate: '16 May 2023'
-    },
-    {
-      id: '8',
-      name: 'Ravi Kumar',
-      role: 'Gardener for Corporate Campus',
-      location: 'Chennai, Tamil Nadu', 
-      experience: '6 years',
-      status: 'interviewed' as const,
-      appliedDate: '10 May 2023'
     }
   ];
-  
-  React.useEffect(() => {
-    if (user) {
-      fetchUserJobs();
-      fetchApplicants();
-    }
-  }, [user]);
-
-  const fetchUserJobs = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('employer_id', user?.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        setUserJobs(data);
-      }
-    } catch (error) {
-      console.error('Error fetching employer jobs:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchApplicants = async () => {
-    try {
-      // In a real application, this would fetch actual applicants
-      // For now, we'll use sample data
-      setUserApplicants(applicants);
-    } catch (error) {
-      console.error('Error fetching applicants:', error);
-    }
-  };
   
   const handleEditJob = (id: string) => {
     navigate(`/edit-job/${id}`);
   };
   
-  const handleDeleteJob = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .delete()
-        .eq('id', id)
-        .eq('employer_id', user?.id);
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Job deleted successfully",
-        description: "The job posting has been removed"
-      });
-      
-      // Refresh the job listings
-      fetchUserJobs();
-      
-    } catch (error: any) {
-      console.error('Error deleting job:', error);
-      toast({
-        title: "Error deleting job",
-        description: error.message || "Something went wrong",
-        variant: "destructive"
-      });
-    }
+  const handleDeleteJob = (id: string) => {
+    // Would implement deletion API call in real app
+    console.log(`Delete job ${id}`);
   };
   
   const handleViewJob = (id: string) => {
@@ -384,32 +264,6 @@ const BlueCollarDashboard = () => {
   const handleViewApplicant = (id: string) => {
     navigate(`/applicants/${id}`);
   };
-
-  const displayJobs = userJobs.length > 0 ? userJobs.map(job => ({
-    id: job.id,
-    title: job.title,
-    location: `${job.location_city}, ${job.location_state}`,
-    postedDate: formatDate(job.created_at),
-    applicantsCount: Math.floor(Math.random() * 10), // Mock data
-    status: job.status as 'active' | 'paused' | 'closed' | 'draft'
-  })) : jobs;
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 30) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-  };
   
   return (
     <div className="container py-6">
@@ -418,30 +272,20 @@ const BlueCollarDashboard = () => {
           <h1 className="text-3xl font-bold">Blue Collar Employer Dashboard</h1>
           <p className="text-muted-foreground">Manage your job postings and track applications</p>
         </div>
-        <div className="flex gap-3">
-          <Button 
-            onClick={() => navigate('/jobs')} 
-            variant="outline"
-            className="flex items-center"
-          >
-            <ArrowUpRight className="mr-2 h-4 w-4" />
-            View Job Listings
-          </Button>
-          <Button 
-            onClick={() => navigate('/post-job')} 
-            className="flex items-center"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Post New Job
-          </Button>
-        </div>
+        <Button 
+          onClick={() => navigate('/post-job')} 
+          className="flex items-center"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Post New Job
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-1">
-              <span className="text-3xl font-bold">{displayJobs.filter(j => j.status === 'active').length}</span>
+              <span className="text-3xl font-bold">{jobs.filter(j => j.status === 'active').length}</span>
               <span className="text-sm text-muted-foreground">Active Jobs</span>
             </div>
           </CardContent>
@@ -497,13 +341,7 @@ const BlueCollarDashboard = () => {
           </div>
           
           <div>
-            {isLoading ? (
-              <Card>
-                <CardContent className="py-10 text-center">
-                  <p className="text-muted-foreground">Loading your job posts...</p>
-                </CardContent>
-              </Card>
-            ) : displayJobs.length === 0 ? (
+            {jobs.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center">
                   <p className="text-muted-foreground mb-4">You haven't posted any jobs yet.</p>
@@ -514,7 +352,7 @@ const BlueCollarDashboard = () => {
                 </CardContent>
               </Card>
             ) : (
-              displayJobs.map(job => (
+              jobs.map(job => (
                 <JobItem 
                   key={job.id}
                   id={job.id}
