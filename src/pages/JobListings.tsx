@@ -22,6 +22,7 @@ import {
 import { Filter, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { addSampleJobs } from '@/utils/sampleJobs';
 
 const JobListings = () => {
   const location = useLocation();
@@ -38,6 +39,7 @@ const JobListings = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [userApplications, setUserApplications] = useState<string[]>([]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -47,6 +49,8 @@ const JobListings = () => {
 
   useEffect(() => {
     fetchJobs();
+    checkAndAddSampleJobs();
+    fetchUserApplications();
   }, []);
 
   useEffect(() => {
@@ -64,6 +68,50 @@ const JobListings = () => {
       setFilteredJobs(allJobs);
     }
   }, [location, allJobs]);
+
+  const checkAndAddSampleJobs = async () => {
+    try {
+      // Check if the user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Get user profile to check if they're an employer
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_employer')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profile && profile.is_employer) {
+          // Add sample jobs with the current employer ID
+          await addSampleJobs(session.user.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking/adding sample jobs:', error);
+    }
+  };
+
+  const fetchUserApplications = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+      
+      const { data: applications, error } = await supabase
+        .from('applications')
+        .select('job_id')
+        .eq('applicant_id', session.user.id);
+        
+      if (error) throw error;
+      
+      if (applications) {
+        setUserApplications(applications.map(app => app.job_id));
+      }
+    } catch (error) {
+      console.error('Error fetching user applications:', error);
+    }
+  };
 
   const fetchJobs = async (loadMore = false) => {
     setIsLoading(!loadMore);
@@ -315,6 +363,9 @@ const JobListings = () => {
         .select();
         
       if (error) throw error;
+      
+      // Update local state to reflect application
+      setUserApplications(prev => [...prev, jobId]);
       
       toast({
         title: "Application submitted",

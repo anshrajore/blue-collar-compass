@@ -36,7 +36,8 @@ const statesAndDistricts = {
   "Delhi": ["New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"],
   "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
   "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam"],
-  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Prayagraj"]
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Prayagraj"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Ajmer"]
 };
 
 // For type safety
@@ -52,6 +53,7 @@ const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSi
   const [salaryRange, setSalaryRange] = useState<number[]>([5000, 50000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
+  const [selectedExperienceLevels, setSelectedExperienceLevels] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState<StateType | "">("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
@@ -84,6 +86,15 @@ const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSi
     );
   };
 
+  // Handle experience level selection
+  const handleExperienceChange = (level: string) => {
+    setSelectedExperienceLevels(prev => 
+      prev.includes(level) 
+        ? prev.filter(l => l !== level) 
+        : [...prev, level]
+    );
+  };
+
   // Handle salary range change
   const handleSalaryChange = (value: number[]) => {
     setSalaryRange(value);
@@ -95,6 +106,7 @@ const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSi
       onFilterChange({
         categories: selectedCategories,
         jobTypes: selectedJobTypes,
+        experienceLevels: selectedExperienceLevels,
         salaryRange: salaryRange,
         location: selectedDistrict ? `${selectedDistrict}, ${selectedState}` : selectedState
       });
@@ -105,6 +117,7 @@ const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSi
   const handleResetFilters = () => {
     setSelectedCategories([]);
     setSelectedJobTypes([]);
+    setSelectedExperienceLevels([]);
     setSalaryRange([5000, 50000]);
     setSelectedState("");
     setSelectedDistrict("");
@@ -221,7 +234,11 @@ const FilterSidebar = ({ onFilterChange, className, isMobile = false }: FilterSi
             <div className="space-y-2 mt-2">
               {experienceLevels.map((level) => (
                 <div key={level} className="flex items-center space-x-2">
-                  <Checkbox id={`level-${level}`} />
+                  <Checkbox 
+                    id={`level-${level}`}
+                    checked={selectedExperienceLevels.includes(level)}
+                    onCheckedChange={() => handleExperienceChange(level)}
+                  />
                   <Label htmlFor={`level-${level}`}>{level}</Label>
                 </div>
               ))}

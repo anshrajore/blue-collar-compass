@@ -1,8 +1,9 @@
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle, Check } from "lucide-react";
 
 export interface JobProps {
   id: string;
@@ -31,6 +32,22 @@ const JobCard = ({
   isVerified = false,
   onApply
 }: JobProps) => {
+  const [isApplied, setIsApplied] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+
+  const handleApply = async () => {
+    setIsApplying(true);
+    
+    try {
+      if (onApply) {
+        await onApply(id);
+        setIsApplied(true);
+      }
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
       <CardContent className="p-6">
@@ -74,13 +91,26 @@ const JobCard = ({
           
           <div className="flex justify-between items-center pt-2 mt-auto">
             <div className="font-medium">₹{salary}</div>
-            <Button 
-              size="sm" 
-              className="bg-nayidisha-blue hover:bg-nayidisha-blue-600"
-              onClick={() => onApply && onApply(id)}
-            >
-              Apply Now
-            </Button>
+            
+            {isApplied ? (
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                disabled
+              >
+                <Check className="h-4 w-4 mr-1" /> Applied
+              </Button>
+            ) : (
+              <Button 
+                size="sm" 
+                className="bg-nayidisha-blue hover:bg-nayidisha-blue-600"
+                onClick={handleApply}
+                disabled={isApplying}
+              >
+                {isApplying ? 'Applying...' : 'Apply Now'}
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
