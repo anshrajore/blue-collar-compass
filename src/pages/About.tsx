@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -123,35 +124,35 @@ const About = () => {
             
             <div className="space-y-12">
               <TimelineItem 
-                year="2019"
+                year="2021"
                 title="The Beginning"
                 description="NayiDisha started as a small team with a big vision. We began by conducting extensive research on the challenges faced by blue-collar workers in finding stable employment."
                 align="left"
               />
               
               <TimelineItem 
-                year="2020"
+                year="2022"
                 title="First Prototype"
                 description="We launched our first prototype in three cities, connecting electricians and plumbers with local businesses. The response exceeded our expectations."
                 align="right"
               />
               
               <TimelineItem 
-                year="2021"
+                year="2023"
                 title="Scaling Up"
                 description="Secured seed funding to expand our operations. Added more job categories and extended our reach to 10 major cities across India."
                 align="left"
               />
               
               <TimelineItem 
-                year="2022"
+                year="2024"
                 title="Technology Innovation"
                 description="Introduced AI-powered matching algorithms and voice interfaces to make our platform more accessible to workers with varying levels of digital literacy."
                 align="right"
               />
               
               <TimelineItem 
-                year="2023"
+                year="2025"
                 title="Present Day"
                 description="Today, NayiDisha serves over 100,000 workers and 5,000 businesses across India, with a comprehensive platform that includes skill development, job matching, and career support."
                 align="left"
