@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Toaster as UIToaster } from "@/components/ui/toaster";
+import { UIToaster } from "@/components/ui/toaster";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -37,7 +37,7 @@ const App = () => {
           <AuthProvider>
             <TooltipProvider>
               <UIToaster />
-              <Toaster position="top-right" closeButton richColors />
+              <Toaster />
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Index />} />
