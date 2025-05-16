@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -305,7 +304,7 @@ const PostJob = () => {
     setIsSubmitting(true);
     
     try {
-      // First check if the user is authenticated
+      // Check if the user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -318,24 +317,7 @@ const PostJob = () => {
         return;
       }
       
-      // Check if user has an employer profile
-      const { data: employerProfile, error: profileError } = await supabase
-        .from('employer_profiles')
-        .select('id')
-        .eq('id', session.user.id)
-        .single();
-        
-      if (profileError || !employerProfile) {
-        toast({
-          title: "Employer profile required",
-          description: "Please complete your employer profile first",
-          variant: "destructive"
-        });
-        navigate('/profile');
-        return;
-      }
-
-      // Create job listing - fix the type issue by not passing an array
+      // Create job listing directly without checking for employer profile
       const { data, error } = await supabase
         .from('jobs')
         .insert({
@@ -362,7 +344,12 @@ const PostJob = () => {
           physical_requirements: formData.physicalRequirements,
           certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
           is_highlighted: formData.isHighlighted,
-          status: 'active'
+          status: 'active',
+          // Add employer info directly to the job posting
+          company_name: formData.companyName,
+          contact_name: formData.contactName,
+          contact_phone: formData.contactPhone,
+          contact_email: formData.contactEmail
         })
         .select();
       
@@ -373,6 +360,7 @@ const PostJob = () => {
       toast({
         title: "Job posted successfully!",
         description: "Your job listing is now live",
+        variant: "success"
       });
       
       navigate('/jobs');

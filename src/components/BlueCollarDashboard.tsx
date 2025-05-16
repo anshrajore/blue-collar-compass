@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash, Plus, Users, Briefcase, Calendar } from 'lucide-react';
+import { Eye, Pencil, Trash, Plus, Users, Briefcase, Calendar, Filter, Download } from 'lucide-react';
 
 interface JobItemProps {
   id: string;
@@ -269,16 +268,26 @@ const BlueCollarDashboard = () => {
     <div className="container py-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Blue Collar Employer Dashboard</h1>
+          <h1 className="text-3xl font-bold">Employer Dashboard</h1>
           <p className="text-muted-foreground">Manage your job postings and track applications</p>
         </div>
-        <Button 
-          onClick={() => navigate('/post-job')} 
-          className="flex items-center"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Post New Job
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => navigate('/post-job')} 
+            className="flex items-center"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Post New Job
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => console.log("Export data")} 
+            className="flex items-center"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -322,25 +331,36 @@ const BlueCollarDashboard = () => {
         onValueChange={setActiveTab}
         className="space-y-4"
       >
-        <TabsList>
-          <TabsTrigger value="jobs">Job Postings</TabsTrigger>
-          <TabsTrigger value="applications">Applications</TabsTrigger>
-          <TabsTrigger value="hired">Hired Workers</TabsTrigger>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="jobs" className="flex-1 sm:flex-initial">Job Postings</TabsTrigger>
+          <TabsTrigger value="applications" className="flex-1 sm:flex-initial">Applications</TabsTrigger>
+          <TabsTrigger value="hired" className="flex-1 sm:flex-initial">Hired</TabsTrigger>
         </TabsList>
+        
         <TabsContent value="jobs" className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <h2 className="text-xl font-semibold">Your Job Postings</h2>
-            <Button 
-              variant="outline"
-              onClick={() => navigate('/post-job')} 
-              className="flex items-center"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              New Job
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => console.log('Filter jobs')}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+              <Button 
+                variant="default"
+                size="sm"
+                onClick={() => navigate('/post-job')} 
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Job
+              </Button>
+            </div>
           </div>
           
-          <div>
+          <div className="space-y-4">
             {jobs.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center">
