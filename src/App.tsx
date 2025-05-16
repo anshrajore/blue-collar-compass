@@ -1,7 +1,7 @@
 
-import React from 'react';  // Make sure React is imported
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import React from 'react';
+import { Toaster as UIToaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -20,7 +20,14 @@ import PostJob from "./pages/PostJob";
 import Dashboard from "./pages/Dashboard";
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => {
   return (
@@ -29,8 +36,8 @@ const App = () => {
         <ThemeProvider defaultTheme="light">
           <AuthProvider>
             <TooltipProvider>
-              <Toaster />
-              <Sonner />
+              <UIToaster />
+              <Toaster position="top-right" closeButton richColors />
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Index />} />
