@@ -25,12 +25,20 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Mic, Save, Eye, ArrowRight, Upload, MapPin, Plus, Trash } from 'lucide-react';
+import { Mic, Save, Eye, ArrowRight, Upload, MapPin, Plus, Trash, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { StyledInput } from '@/components/ui/styled-input';
+import JobPreview from '@/components/JobPreview';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
-// Updated job categories for blue collar jobs
 const jobCategories = [
   "Construction", "Transportation", "Hospitality", "Manufacturing", 
   "Security", "Cleaning", "Retail", "Agriculture", "Healthcare", "Warehouse",
@@ -124,6 +132,7 @@ const PostJob = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedDrafts, setSavedDrafts] = useState<any[]>([]);
   const [showDraftsList, setShowDraftsList] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -213,7 +222,6 @@ const PostJob = () => {
   };
 
   const handleSaveDraft = () => {
-    // In a real application, you would save this to the database
     const draftId = Date.now().toString();
     const draft = {
       id: draftId,
@@ -250,7 +258,6 @@ const PostJob = () => {
   };
 
   const handleDuplicateJob = async () => {
-    // Create a copy of the current job with a new title
     setFormData({
       ...formData,
       title: `${formData.title} (Copy)`,
@@ -263,7 +270,6 @@ const PostJob = () => {
   };
 
   const handleFileUpload = (name: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    // In a real application, you would upload the file to a storage service
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const fileURL = URL.createObjectURL(file);
@@ -304,7 +310,6 @@ const PostJob = () => {
     setIsSubmitting(true);
     
     try {
-      // Check if the user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -317,7 +322,6 @@ const PostJob = () => {
         return;
       }
       
-      // Create job listing directly without checking for employer profile
       const { data, error } = await supabase
         .from('jobs')
         .insert({
@@ -345,7 +349,6 @@ const PostJob = () => {
           certifications_required: formData.certifications?.split(',').map(cert => cert.trim()),
           is_highlighted: formData.isHighlighted,
           status: 'active',
-          // Add employer info directly to the job posting
           company_name: formData.companyName,
           contact_name: formData.contactName,
           contact_phone: formData.contactPhone,
@@ -395,6 +398,39 @@ const PostJob = () => {
     "Company Info"
   ];
 
+  const handlePreview = () => {
+    setPreviewOpen(true);
+  };
+
+  const previewJob = {
+    id: 'preview',
+    title: formData.title || 'Job Title',
+    company: formData.companyName || 'Company Name',
+    location: `${formData.city || 'City'}, ${formData.state || 'State'}`,
+    salary: `₹${formData.salaryMin.toLocaleString()} - ₹${formData.salaryMax.toLocaleString()}/${formData.salaryPeriod}`,
+    postedDate: 'Just now',
+    jobType: formData.jobType || 'Job Type',
+    category: formData.category || 'Category',
+    description: formData.description || 'Job Description',
+    isUrgent: false,
+    isVerified: false,
+    requirements: {
+      education: formData.minEducation,
+      experience: formData.experienceMonths > 0 ? `${Math.floor(formData.experienceMonths/12)} years ${formData.experienceMonths % 12} months` : 'None',
+      languages: formData.languages,
+      skills: []
+    },
+    workSchedule: {
+      days: formData.workDays,
+      hours: formData.shiftStart && formData.shiftEnd ? `${formData.shiftStart} to ${formData.shiftEnd}` : 'Full day'
+    },
+    contactInfo: {
+      name: formData.contactName,
+      phone: formData.contactPhone,
+      email: formData.contactEmail
+    }
+  };
+
   return (
     <Layout>
       <div className="container py-8 px-4 md:py-12">
@@ -422,7 +458,6 @@ const PostJob = () => {
           </div>
         </div>
 
-        {/* Drafts List */}
         {showDraftsList && savedDrafts.length > 0 && (
           <Card className="max-w-3xl mx-auto mb-6">
             <CardHeader>
@@ -472,7 +507,6 @@ const PostJob = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Step 1: Job Details */}
               {currentStep === 0 && (
                 <div className="space-y-4">
                   <StyledInput
@@ -577,7 +611,6 @@ const PostJob = () => {
                 </div>
               )}
               
-              {/* Step 2: Location & Salary */}
               {currentStep === 1 && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -732,7 +765,6 @@ const PostJob = () => {
                 </div>
               )}
               
-              {/* Step 3: Schedule & Requirements */}
               {currentStep === 2 && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -913,7 +945,6 @@ const PostJob = () => {
                 </div>
               )}
               
-              {/* Step 4: Company Info */}
               {currentStep === 3 && (
                 <div className="space-y-4">
                   <div>
@@ -1137,12 +1168,7 @@ const PostJob = () => {
                 <Button 
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    toast({
-                      title: "Preview",
-                      description: "This feature is coming soon",
-                    });
-                  }}
+                  onClick={handlePreview}
                 >
                   <Eye className="mr-2 h-4 w-4" />
                   Preview
@@ -1165,6 +1191,32 @@ const PostJob = () => {
             )}
           </CardFooter>
         </Card>
+
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex justify-between items-center">
+                <span>Job Preview</span>
+                <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(false)} className="h-8 w-8 p-0">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTitle>
+              <DialogDescription>
+                This is how your job will appear to job seekers
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="mt-4">
+              <JobPreview job={previewJob} />
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <Button onClick={() => setPreviewOpen(false)}>
+                Close Preview
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {currentStep === stepTitles.length - 1 && (
           <div className="max-w-3xl mx-auto mt-8">
