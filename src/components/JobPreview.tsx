@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Calendar, Clock, BookOpen, Languages, Award, Share2, Bookmark, Eye, Users, Phone, Mail, Globe, Building } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface JobRequirements {
   education?: string;
@@ -50,6 +52,34 @@ interface JobPreviewProps {
 const JobPreview: React.FC<JobPreviewProps> = ({ job }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const navigate = useNavigate();
+
+  // Check if user has already applied for this job
+  useEffect(() => {
+    const checkIfApplied = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && job.id !== 'preview') {
+          const { data } = await supabase
+            .from('applications')
+            .select('id')
+            .eq('job_id', job.id)
+            .eq('applicant_id', session.user.id)
+            .single();
+            
+          if (data) {
+            setHasApplied(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking application status:", error);
+      }
+    };
+    
+    checkIfApplied();
+  }, [job.id]);
 
   const getDayName = (day: string) => {
     const days: Record<string, string> = {
@@ -88,12 +118,84 @@ const JobPreview: React.FC<JobPreviewProps> = ({ job }) => {
     }
   };
 
-  const handleApply = () => {
-    setHasApplied(true);
-    toast({
-      title: "Application submitted successfully!",
-      description: "You'll be notified when the employer responds.",
-    });
+  const handleApply = async () => {
+    if (job.id === 'preview') {
+      toast({
+        title: "Preview mode",
+        description: "This is a preview. Please post the job first to enable applications.",
+        variant: "default"
+      });
+      return;
+    }
+
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to apply for jobs",
+          variant: "destructive"
+        });
+        navigate('/auth');
+        return;
+      }
+
+      setIsApplying(true);
+
+      // Check if the user has already applied
+      const { data: existingApplication, error: checkError } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('job_id', job.id)
+        .eq('applicant_id', session.user.id)
+        .single();
+        
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+      
+      if (existingApplication) {
+        toast({
+          title: "Already applied",
+          description: "You have already applied for this job",
+          variant: "default"
+        });
+        setHasApplied(true);
+        setIsApplying(false);
+        return;
+      }
+      
+      // Create application
+      const { data, error } = await supabase
+        .from('applications')
+        .insert({
+          job_id: job.id,
+          applicant_id: session.user.id,
+          status: 'applied'
+        })
+        .select();
+        
+      if (error) throw error;
+      
+      setHasApplied(true);
+      
+      toast({
+        title: "Application submitted successfully!",
+        description: "You'll be notified when the employer responds.",
+      });
+      
+    } catch (error: any) {
+      console.error('Error applying for job:', error);
+      toast({
+        title: "Failed to submit application",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   return (
@@ -236,9 +338,10 @@ const JobPreview: React.FC<JobPreviewProps> = ({ job }) => {
                 <Button 
                   size="lg" 
                   onClick={handleApply}
+                  disabled={isApplying}
                   className="w-full bg-nayidisha-blue hover:bg-nayidisha-blue-600"
                 >
-                  Apply Now
+                  {isApplying ? 'Applying...' : 'Apply Now'}
                 </Button>
               )}
               

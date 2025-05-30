@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle, Check, Bookmark, Share2, Eye, TrendingUp } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export interface JobProps {
   id: string;
@@ -42,6 +43,7 @@ const JobCard = ({
   const [isApplying, setIsApplying] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 500) + 50);
+  const navigate = useNavigate();
 
   // Check if user has already applied for this job
   useEffect(() => {
@@ -70,21 +72,74 @@ const JobCard = ({
   }, [id]);
 
   const handleApply = async () => {
-    setIsApplying(true);
-    
     try {
-      if (onApply) {
-        await onApply(id);
-        setIsApplied(true);
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
         toast({
-          title: "Application submitted successfully!",
-          description: "You'll be notified when the employer responds.",
+          title: "Authentication required",
+          description: "Please sign in to apply for jobs",
+          variant: "destructive"
         });
+        navigate('/auth');
+        return;
       }
-    } catch (error) {
+
+      setIsApplying(true);
+
+      // Check if the user has already applied
+      const { data: existingApplication, error: checkError } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('job_id', id)
+        .eq('applicant_id', session.user.id)
+        .single();
+        
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+      
+      if (existingApplication) {
+        toast({
+          title: "Already applied",
+          description: "You have already applied for this job",
+          variant: "default"
+        });
+        setIsApplied(true);
+        setIsApplying(false);
+        return;
+      }
+      
+      // Create application
+      const { data, error } = await supabase
+        .from('applications')
+        .insert({
+          job_id: id,
+          applicant_id: session.user.id,
+          status: 'applied'
+        })
+        .select();
+        
+      if (error) throw error;
+      
+      setIsApplied(true);
+      
+      // Call the onApply callback if provided
+      if (onApply) {
+        onApply(id);
+      }
+      
+      toast({
+        title: "Application submitted successfully!",
+        description: "You'll be notified when the employer responds.",
+      });
+      
+    } catch (error: any) {
+      console.error('Error applying for job:', error);
       toast({
         title: "Failed to submit application",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
