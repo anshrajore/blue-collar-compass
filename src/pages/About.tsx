@@ -124,28 +124,28 @@ const About = () => {
             
             <div className="space-y-12">
               <TimelineItem 
-                year="2021"
+                year="2025"
                 title="The Beginning"
                 description="NayiDisha started as a small team with a big vision. We began by conducting extensive research on the challenges faced by blue-collar workers in finding stable employment."
                 align="left"
               />
               
               <TimelineItem 
-                year="2022"
+                year="2025"
                 title="First Prototype"
                 description="We launched our first prototype in three cities, connecting electricians and plumbers with local businesses. The response exceeded our expectations."
                 align="right"
               />
               
               <TimelineItem 
-                year="2023"
+                year="2025"
                 title="Scaling Up"
                 description="Secured seed funding to expand our operations. Added more job categories and extended our reach to 10 major cities across India."
                 align="left"
               />
               
               <TimelineItem 
-                year="2024"
+                year="2025"
                 title="Technology Innovation"
                 description="Introduced AI-powered matching algorithms and voice interfaces to make our platform more accessible to workers with varying levels of digital literacy."
                 align="right"
