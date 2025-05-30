@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -162,20 +161,66 @@ const PostJob = () => {
   ];
 
   if (showPreview) {
+    const previewJob = {
+      id: 'preview',
+      title: formData.title,
+      company: formData.company_name,
+      location: `${formData.location_city}, ${formData.location_state}`,
+      salary: `${formData.salary_min} - ${formData.salary_max}/${formData.salary_period}`,
+      postedDate: 'Just now',
+      jobType: formData.jobType,
+      category: formData.category,
+      description: formData.description,
+      isUrgent: formData.is_urgent,
+      isVerified: formData.is_verified,
+      isHighlighted: formData.is_highlighted,
+      requirements: {
+        education: formData.min_education,
+        experience: formData.min_experience_months ? `${formData.min_experience_months} months` : undefined,
+        languages: formData.languages_required
+      },
+      workSchedule: {
+        days: formData.work_days,
+        hours: formData.shift_start && formData.shift_end ? `${formData.shift_start} - ${formData.shift_end}` : undefined
+      },
+      contactInfo: {
+        name: formData.contact_name,
+        phone: formData.contact_phone,
+        email: formData.contact_email
+      },
+      applicantsCount: 0,
+      viewCount: 0
+    };
+
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
-          <JobPreview
-            jobData={{
-              ...formData,
-              id: 'preview',
-              postedDate: 'Just now',
-              applicantsCount: 0
-            }}
-            onEdit={() => setShowPreview(false)}
-            onPost={handleSubmit}
-            isLoading={isLoading}
-          />
+          <div className="mb-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowPreview(false)}
+              className="mb-4"
+            >
+              ← Back to Edit
+            </Button>
+          </div>
+          <JobPreview job={previewJob} />
+          <div className="mt-6 flex gap-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowPreview(false)}
+              className="flex-1"
+            >
+              Edit Job
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="flex-1"
+            >
+              {isLoading ? 'Posting...' : 'Post Job'}
+            </Button>
+          </div>
         </div>
       </Layout>
     );
