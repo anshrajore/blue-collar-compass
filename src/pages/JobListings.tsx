@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -135,7 +134,8 @@ const JobListings = () => {
           created_at,
           is_urgent,
           is_verified,
-          employer_profiles(company_name)
+          is_highlighted,
+          company_name
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
@@ -147,14 +147,16 @@ const JobListings = () => {
         const formattedJobs: JobProps[] = data.map(job => ({
           id: job.id,
           title: job.title,
-          company: job.employer_profiles?.company_name || 'Unknown Company',
+          company: job.company_name || 'Unknown Company',
           location: `${job.location_city}, ${job.location_state}`,
-          salary: `${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}/${job.salary_period || 'month'}`,
+          salary: `${job.salary_min?.toLocaleString() || '0'} - ${job.salary_max?.toLocaleString() || '0'}/${job.salary_period || 'month'}`,
           postedDate: formatPostedDate(new Date(job.created_at)),
           jobType: job.job_type,
           category: job.category,
           isUrgent: job.is_urgent,
-          isVerified: job.is_verified
+          isVerified: job.is_verified,
+          isHighlighted: job.is_highlighted,
+          applicantsCount: Math.floor(Math.random() * 50) + 1
         }));
         
         if (loadMore) {

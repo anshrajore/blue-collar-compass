@@ -211,7 +211,10 @@ export type Database = {
         Row: {
           category: string
           certifications_required: string[] | null
-          "company-name": string | null
+          company_name: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string | null
           date: string | null
           description: string | null
@@ -229,7 +232,6 @@ export type Database = {
           location_coordinates: unknown | null
           location_pincode: string | null
           location_state: string | null
-          "main-title": string
           management: string | null
           min_education: string | null
           min_experience_months: number | null
@@ -240,14 +242,19 @@ export type Database = {
           salary_period: string | null
           shift_end: string | null
           shift_start: string | null
+          start_date: string | null
           status: string | null
+          title: string
           updated_at: string | null
           work_days: string[] | null
         }
         Insert: {
           category: string
           certifications_required?: string[] | null
-          "company-name"?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           date?: string | null
           description?: string | null
@@ -265,7 +272,6 @@ export type Database = {
           location_coordinates?: unknown | null
           location_pincode?: string | null
           location_state?: string | null
-          "main-title": string
           management?: string | null
           min_education?: string | null
           min_experience_months?: number | null
@@ -276,14 +282,19 @@ export type Database = {
           salary_period?: string | null
           shift_end?: string | null
           shift_start?: string | null
+          start_date?: string | null
           status?: string | null
+          title: string
           updated_at?: string | null
           work_days?: string[] | null
         }
         Update: {
           category?: string
           certifications_required?: string[] | null
-          "company-name"?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           date?: string | null
           description?: string | null
@@ -301,7 +312,6 @@ export type Database = {
           location_coordinates?: unknown | null
           location_pincode?: string | null
           location_state?: string | null
-          "main-title"?: string
           management?: string | null
           min_education?: string | null
           min_experience_months?: number | null
@@ -312,7 +322,9 @@ export type Database = {
           salary_period?: string | null
           shift_end?: string | null
           shift_start?: string | null
+          start_date?: string | null
           status?: string | null
+          title?: string
           updated_at?: string | null
           work_days?: string[] | null
         }
