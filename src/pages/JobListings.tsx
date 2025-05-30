@@ -22,6 +22,9 @@ import { Filter, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { addSampleJobs } from '@/utils/sampleJobs';
+import JobQuickFilters from '@/components/JobQuickFilters';
+import JobStats from '@/components/JobStats';
+import JobRecommendations from '@/components/JobRecommendations';
 
 const JobListings = () => {
   const location = useLocation();
@@ -395,6 +398,11 @@ const JobListings = () => {
     fetchJobs(true);
   };
 
+  const handleJobSelect = (jobId: string) => {
+    // Navigate to job detail page or open in modal
+    navigate(`/job/${jobId}`);
+  };
+
   return (
     <Layout>
       <div className="bg-muted/30 py-10">
@@ -405,9 +413,18 @@ const JobListings = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row gap-6">
+        {/* Job Stats */}
+        <JobStats jobs={allJobs} filteredJobs={filteredJobs} />
+
+        {/* Quick Filters */}
+        <JobQuickFilters 
+          onFilterChange={handleFilterChange} 
+          activeFilters={activeFilters}
+        />
+
+        <div className="flex flex-col lg:flex-row gap-6">
           {!isMobile && (
-            <div className="md:w-1/4 lg:w-1/5">
+            <div className="lg:w-1/4">
               <FilterSidebar onFilterChange={handleFilterChange} />
             </div>
           )}
@@ -503,6 +520,14 @@ const JobListings = () => {
                 </Button>
               </div>
             )}
+          </div>
+
+          {/* Recommendations Sidebar */}
+          <div className="lg:w-1/4">
+            <JobRecommendations 
+              jobs={allJobs} 
+              onJobSelect={handleJobSelect}
+            />
           </div>
         </div>
       </div>
