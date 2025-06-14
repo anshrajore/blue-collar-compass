@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ const JobCard = ({
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (session) {
+        if (session && isValidUUID(id)) {
           const { data } = await supabase
             .from('applications')
             .select('id')
@@ -74,6 +75,11 @@ const JobCard = ({
     checkIfApplied();
   }, [id]);
 
+  const isValidUUID = (uuid: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  };
+
   const handleApply = async () => {
     try {
       if (!user) {
@@ -83,6 +89,15 @@ const JobCard = ({
           variant: "destructive"
         });
         navigate('/auth');
+        return;
+      }
+
+      if (!isValidUUID(id)) {
+        toast({
+          title: "Invalid job ID",
+          description: "This appears to be a sample job. Please try applying to real jobs.",
+          variant: "destructive"
+        });
         return;
       }
 
@@ -130,7 +145,7 @@ const JobCard = ({
         await sendApplicationNotification(
           employer_id,
           title,
-          profile?.full_name || user.email,
+          profile?.full_name || user.email || 'Anonymous User',
           profile?.phone_number || '9096946604'
         );
       }

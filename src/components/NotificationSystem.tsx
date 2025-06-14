@@ -4,7 +4,6 @@ import { Bell, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthContext';
 import {
   Popover,
@@ -30,87 +29,57 @@ const NotificationSystem: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      fetchNotifications();
-      setupRealtimeSubscription();
+      loadNotifications();
     }
   }, [user]);
 
-  const fetchNotifications = async () => {
+  const loadNotifications = () => {
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-
-      if (data) {
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.read).length);
+      const stored = localStorage.getItem(`notifications_${user?.id}`);
+      if (stored) {
+        const notifications = JSON.parse(stored);
+        setNotifications(notifications);
+        setUnreadCount(notifications.filter((n: Notification) => !n.read).length);
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error('Error loading notifications:', error);
     }
   };
 
-  const setupRealtimeSubscription = () => {
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user?.id}`
-        },
-        (payload) => {
-          setNotifications(prev => [payload.new as Notification, ...prev.slice(0, 9)]);
-          setUnreadCount(prev => prev + 1);
-        }
-      )
-      .subscribe();
+  const saveNotifications = (newNotifications: Notification[]) => {
+    if (user) {
+      localStorage.setItem(`notifications_${user.id}`, JSON.stringify(newNotifications));
+    }
+  };
 
-    return () => {
-      supabase.removeChannel(channel);
+  const markAsRead = (notificationId: string) => {
+    const updated = notifications.map(n => 
+      n.id === notificationId ? { ...n, read: true } : n
+    );
+    setNotifications(updated);
+    saveNotifications(updated);
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  };
+
+  const markAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    saveNotifications(updated);
+    setUnreadCount(0);
+  };
+
+  const addNotification = (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: Math.random().toString(36).substr(2, 9),
+      created_at: new Date().toISOString(),
+      read: false
     };
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', user?.id)
-        .eq('read', false);
-
-      if (error) throw error;
-
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      setUnreadCount(0);
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+    
+    const updated = [newNotification, ...notifications.slice(0, 9)];
+    setNotifications(updated);
+    saveNotifications(updated);
+    setUnreadCount(prev => prev + 1);
   };
 
   const formatTime = (timestamp: string) => {
@@ -126,6 +95,13 @@ const NotificationSystem: React.FC = () => {
     if (diffHours < 24) return `${diffHours}h ago`;
     return `${diffDays}d ago`;
   };
+
+  // Expose addNotification function globally
+  useEffect(() => {
+    if (user) {
+      (window as any).addNotification = addNotification;
+    }
+  }, [user, notifications]);
 
   if (!user) return null;
 

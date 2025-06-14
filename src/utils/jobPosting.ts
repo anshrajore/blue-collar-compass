@@ -49,16 +49,15 @@ export const createJob = async (jobData: JobPostingData) => {
 
     if (error) throw error;
 
-    // Send notification to admin about new job posting
-    await supabase
-      .from('notifications')
-      .insert({
-        user_id: session.user.id,
+    // Add notification using the global function
+    if ((window as any).addNotification) {
+      (window as any).addNotification({
         type: 'job_posted',
         title: 'Job Posted Successfully',
         message: `Your job "${jobData.title}" has been posted and is now live.`,
         data: { job_id: data.id }
       });
+    }
 
     toast({
       title: "Job posted successfully!",
@@ -84,11 +83,9 @@ export const sendApplicationNotification = async (
   applicantPhone: string = '9096946604'
 ) => {
   try {
-    // Notify employer about new application
-    await supabase
-      .from('notifications')
-      .insert({
-        user_id: employerId,
+    // Add notification using the global function
+    if ((window as any).addNotification) {
+      (window as any).addNotification({
         type: 'new_application',
         title: 'New Job Application',
         message: `${applicantName} has applied for "${jobTitle}". Contact: ${applicantPhone}`,
@@ -98,8 +95,8 @@ export const sendApplicationNotification = async (
           job_title: jobTitle
         }
       });
+    }
 
-    // Here you could also integrate with SMS/WhatsApp API
     console.log(`New application for ${jobTitle} from ${applicantName} (${applicantPhone})`);
     
   } catch (error) {
