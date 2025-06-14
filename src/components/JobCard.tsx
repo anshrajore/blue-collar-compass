@@ -1,3 +1,5 @@
+
+// Remove duplicate imports if any and improve date handling:
 import React from "react";
 import {
   Card,
@@ -58,8 +60,6 @@ const JobCard = ({ job }: { job: JobCardProps["job"] }) => {
       return;
     }
     try {
-      // Dummy API call / actual application logic here
-      // TODO: In production, insert application into applications table.
       sendApplicationNotification(
         job.employer_id,
         job.title,
@@ -80,7 +80,14 @@ const JobCard = ({ job }: { job: JobCardProps["job"] }) => {
     }
   };
 
-  const timeAgo = formatDistanceToNow(new Date(job.created_at), { addSuffix: true });
+  // Robust date handling: If date is missing or invalid, do NOT throw
+  let timeAgo = "Date unknown";
+  if (job.created_at) {
+    const parsedDate = new Date(job.created_at);
+    if (!isNaN(parsedDate.getTime())) {
+      timeAgo = formatDistanceToNow(parsedDate, { addSuffix: true });
+    }
+  }
 
   return (
     <div className="border rounded-lg shadow p-4 mb-4 bg-white flex flex-col gap-3">
@@ -116,3 +123,4 @@ const JobCard = ({ job }: { job: JobCardProps["job"] }) => {
 };
 
 export default JobCard;
+
