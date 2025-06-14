@@ -7,8 +7,6 @@ import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle, Check, Bookmark, 
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/components/AuthContext";
-import { sendApplicationNotification } from "@/utils/jobPosting";
 
 export interface JobProps {
   id: string;
@@ -23,7 +21,6 @@ export interface JobProps {
   isVerified?: boolean;
   isHighlighted?: boolean;
   applicantsCount?: number;
-  employer_id?: string;
   onApply?: (id: string) => void;
 }
 
@@ -40,7 +37,6 @@ const JobCard = ({
   isVerified = false,
   isHighlighted = false,
   applicantsCount = 0,
-  employer_id,
   onApply
 }: JobProps) => {
   const [isApplied, setIsApplied] = useState(false);
@@ -48,14 +44,14 @@ const JobCard = ({
   const [isSaved, setIsSaved] = useState(false);
   const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 500) + 50);
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
 
+  // Check if user has already applied for this job
   useEffect(() => {
     const checkIfApplied = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (session && isValidUUID(id)) {
+        if (session) {
           const { data } = await supabase
             .from('applications')
             .select('id')
@@ -75,14 +71,12 @@ const JobCard = ({
     checkIfApplied();
   }, [id]);
 
-  const isValidUUID = (uuid: string): boolean => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-  };
-
   const handleApply = async () => {
     try {
-      if (!user) {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
         toast({
           title: "Authentication required",
           description: "Please sign in to apply for jobs",
@@ -92,23 +86,14 @@ const JobCard = ({
         return;
       }
 
-      if (!isValidUUID(id)) {
-        toast({
-          title: "Invalid job ID",
-          description: "This appears to be a sample job. Please try applying to real jobs.",
-          variant: "destructive"
-        });
-        return;
-      }
-
       setIsApplying(true);
 
-      // Check if user has already applied
+      // Check if the user has already applied
       const { data: existingApplication, error: checkError } = await supabase
         .from('applications')
         .select('id')
         .eq('job_id', id)
-        .eq('applicant_id', user.id)
+        .eq('applicant_id', session.user.id)
         .single();
         
       if (checkError && checkError.code !== 'PGRST116') {
@@ -131,7 +116,7 @@ const JobCard = ({
         .from('applications')
         .insert({
           job_id: id,
-          applicant_id: user.id,
+          applicant_id: session.user.id,
           status: 'applied'
         })
         .select();
@@ -140,16 +125,6 @@ const JobCard = ({
       
       setIsApplied(true);
       
-      // Send notification to employer with applicant's contact info
-      if (employer_id) {
-        await sendApplicationNotification(
-          employer_id,
-          title,
-          profile?.full_name || user.email || 'Anonymous User',
-          profile?.phone_number || '9096946604'
-        );
-      }
-      
       // Call the onApply callback if provided
       if (onApply) {
         onApply(id);
@@ -157,7 +132,7 @@ const JobCard = ({
       
       toast({
         title: "Application submitted successfully!",
-        description: "The employer has been notified with your contact details.",
+        description: "You'll be notified when the employer responds.",
       });
       
     } catch (error: any) {
