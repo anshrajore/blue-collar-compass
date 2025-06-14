@@ -17,13 +17,22 @@ import { isValidUUID, sendApplicationNotification } from "@/utils/jobPosting";
 import { useAuth } from "@/components/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import React from "react";
 
-interface JobCardProps {
-  job: any;
-}
+export type JobCardProps = {
+  job: {
+    id: string;
+    title: string;
+    company_name: string;
+    employer_id?: string;
+    is_urgent?: boolean;
+    location_city: string;
+    location_state: string;
+    created_at: string;
+    // add more fields here as necessary
+  };
+};
 
-const JobCard = ({ job }: { job: any }) => {
+const JobCard = ({ job }: { job: JobCardProps["job"] }) => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

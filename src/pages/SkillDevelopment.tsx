@@ -1,4 +1,3 @@
-
 import React from "react";
 import Layout from "@/components/Layout";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
@@ -90,7 +89,9 @@ const SkillDevelopment = () => {
                         Continue
                       </Button>
                     ) : (
-                      <Badge variant="success">Completed</Badge>
+                      <Badge variant="secondary" className="bg-green-200 text-green-800">
+                        Completed
+                      </Badge>
                     )}
                   </div>
                 </CardContent>
