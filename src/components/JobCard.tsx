@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Briefcase, MapPin, Clock, AlertTriangle, CheckCircle, Check, Bookmark, 
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/components/AuthContext";
+import { sendApplicationNotification } from "@/utils/jobPosting";
 
 export interface JobProps {
   id: string;
@@ -21,6 +22,7 @@ export interface JobProps {
   isVerified?: boolean;
   isHighlighted?: boolean;
   applicantsCount?: number;
+  employer_id?: string;
   onApply?: (id: string) => void;
 }
 
@@ -37,6 +39,7 @@ const JobCard = ({
   isVerified = false,
   isHighlighted = false,
   applicantsCount = 0,
+  employer_id,
   onApply
 }: JobProps) => {
   const [isApplied, setIsApplied] = useState(false);
@@ -44,8 +47,8 @@ const JobCard = ({
   const [isSaved, setIsSaved] = useState(false);
   const [viewCount, setViewCount] = useState(Math.floor(Math.random() * 500) + 50);
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
 
-  // Check if user has already applied for this job
   useEffect(() => {
     const checkIfApplied = async () => {
       try {
@@ -73,10 +76,7 @@ const JobCard = ({
 
   const handleApply = async () => {
     try {
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      if (!user) {
         toast({
           title: "Authentication required",
           description: "Please sign in to apply for jobs",
@@ -88,12 +88,12 @@ const JobCard = ({
 
       setIsApplying(true);
 
-      // Check if the user has already applied
+      // Check if user has already applied
       const { data: existingApplication, error: checkError } = await supabase
         .from('applications')
         .select('id')
         .eq('job_id', id)
-        .eq('applicant_id', session.user.id)
+        .eq('applicant_id', user.id)
         .single();
         
       if (checkError && checkError.code !== 'PGRST116') {
@@ -116,7 +116,7 @@ const JobCard = ({
         .from('applications')
         .insert({
           job_id: id,
-          applicant_id: session.user.id,
+          applicant_id: user.id,
           status: 'applied'
         })
         .select();
@@ -125,6 +125,16 @@ const JobCard = ({
       
       setIsApplied(true);
       
+      // Send notification to employer with applicant's contact info
+      if (employer_id) {
+        await sendApplicationNotification(
+          employer_id,
+          title,
+          profile?.full_name || user.email,
+          profile?.phone_number || '9096946604'
+        );
+      }
+      
       // Call the onApply callback if provided
       if (onApply) {
         onApply(id);
@@ -132,7 +142,7 @@ const JobCard = ({
       
       toast({
         title: "Application submitted successfully!",
-        description: "You'll be notified when the employer responds.",
+        description: "The employer has been notified with your contact details.",
       });
       
     } catch (error: any) {

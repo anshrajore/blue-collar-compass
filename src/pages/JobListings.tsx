@@ -18,15 +18,17 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Filter, MapPin, Loader2 } from 'lucide-react';
+import { Filter, MapPin, Loader2, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
-import { addSampleJobs } from '@/utils/sampleJobs';
+import { useAuth } from '@/components/AuthContext';
+import { Link } from 'react-router-dom';
 
 const JobListings = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [filteredJobs, setFilteredJobs] = useState<JobProps[]>([]);
@@ -48,9 +50,10 @@ const JobListings = () => {
 
   useEffect(() => {
     fetchJobs();
-    checkAndAddSampleJobs();
-    fetchUserApplications();
-  }, []);
+    if (user) {
+      fetchUserApplications();
+    }
+  }, [user]);
 
   useEffect(() => {
     // Extract query parameters
@@ -68,39 +71,14 @@ const JobListings = () => {
     }
   }, [location, allJobs]);
 
-  const checkAndAddSampleJobs = async () => {
-    try {
-      // Check if the user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        // Get user profile to check if they're an employer
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_employer')
-          .eq('id', session.user.id)
-          .single();
-          
-        if (profile && profile.is_employer) {
-          // Add sample jobs with the current employer ID
-          await addSampleJobs(session.user.id);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking/adding sample jobs:', error);
-    }
-  };
-
   const fetchUserApplications = async () => {
+    if (!user) return;
+    
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) return;
-      
       const { data: applications, error } = await supabase
         .from('applications')
         .select('job_id')
-        .eq('applicant_id', session.user.id);
+        .eq('applicant_id', user.id);
         
       if (error) throw error;
       
@@ -135,7 +113,8 @@ const JobListings = () => {
           is_urgent,
           is_verified,
           is_highlighted,
-          company_name
+          company_name,
+          employer_id
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
@@ -156,17 +135,16 @@ const JobListings = () => {
           isUrgent: job.is_urgent,
           isVerified: job.is_verified,
           isHighlighted: job.is_highlighted,
-          applicantsCount: Math.floor(Math.random() * 50) + 1
+          applicantsCount: Math.floor(Math.random() * 50) + 1,
+          employer_id: job.employer_id
         }));
         
         if (loadMore) {
-          // If we're loading more jobs, append them to existing jobs
           setAllJobs(prev => [...prev, ...formattedJobs]);
           setFilteredJobs(prev => [...prev, ...formattedJobs]);
           setPage(prev => prev + 1);
           setHasMore(formattedJobs.length === 10);
         } else {
-          // First load
           setAllJobs(formattedJobs);
           setFilteredJobs(formattedJobs);
         }
@@ -324,10 +302,7 @@ const JobListings = () => {
   
   const handleApplyJob = async (jobId: string) => {
     try {
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      if (!user) {
         toast({
           title: "Authentication required",
           description: "Please sign in to apply for jobs",
@@ -342,7 +317,7 @@ const JobListings = () => {
         .from('applications')
         .select('id')
         .eq('job_id', jobId)
-        .eq('applicant_id', session.user.id)
+        .eq('applicant_id', user.id)
         .single();
         
       if (existingApplication) {
@@ -359,7 +334,7 @@ const JobListings = () => {
         .from('applications')
         .insert({
           job_id: jobId,
-          applicant_id: session.user.id,
+          applicant_id: user.id,
           status: 'applied'
         })
         .select();
@@ -399,7 +374,17 @@ const JobListings = () => {
     <Layout>
       <div className="bg-muted/30 py-10">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-6">Find Your Perfect Job</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Find Your Perfect Job</h1>
+            {user && profile?.is_employer && (
+              <Button asChild className="bg-nayidisha-blue hover:bg-nayidisha-blue-600">
+                <Link to="/post-job">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Post a Job
+                </Link>
+              </Button>
+            )}
+          </div>
           <SearchBar onSearch={handleSearch} className="max-w-4xl" />
         </div>
       </div>

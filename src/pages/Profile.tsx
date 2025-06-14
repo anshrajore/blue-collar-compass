@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -29,33 +28,98 @@ import {
   Cake,
   Languages,
   Home,
-  Smartphone
+  Smartphone,
+  Camera,
+  FileText,
+  Download
 } from 'lucide-react';
-
+import { useAuth } from '@/components/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import FileUpload from '@/components/FileUpload';
 import ProfileSkillSection from '@/components/profile/ProfileSkillSection';
 import ProfileEducation from '@/components/profile/ProfileEducation';
 import ProfileJobPreferences from '@/components/profile/ProfileJobPreferences';
 import ProfileDocumentWallet from '@/components/profile/ProfileDocumentWallet';
 
 const Profile = () => {
+  const { user, profile, refreshProfile } = useAuth();
   const [profileCompletion, setProfileCompletion] = useState(65);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('skills');
+  const [profileData, setProfileData] = useState({
+    full_name: profile?.full_name || '',
+    phone_number: profile?.phone_number || '',
+    email: profile?.email || user?.email || '',
+    profile_image: profile?.profile_image || ''
+  });
+  const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
   
-  const handleSaveProfile = () => {
-    setIsEditing(false);
+  const handleSaveProfile = async () => {
+    try {
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: profileData.full_name,
+          phone_number: profileData.phone_number,
+          profile_image: profileData.profile_image
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      await refreshProfile();
+      setIsEditing(false);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been saved successfully.",
+      });
+      
+      setProfileCompletion(Math.min(profileCompletion + 10, 100));
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error updating profile",
+        description: error.message || "Something went wrong",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleProfileImageUpload = (file: { url: string; path: string; name: string }) => {
+    setProfileData(prev => ({ ...prev, profile_image: file.url }));
     toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved successfully.",
+      title: "Profile image uploaded",
+      description: "Your profile image has been updated successfully.",
     });
-    
-    // Simulate progress increase
-    setProfileCompletion(Math.min(profileCompletion + 10, 100));
+  };
+
+  const handleDocumentUpload = (file: { url: string; path: string; name: string }) => {
+    setUploadedDocuments(prev => [...prev, file]);
+    toast({
+      title: "Document uploaded",
+      description: `${file.name} has been uploaded to your profile.`,
+    });
   };
   
-  const handleTabChange = (value) => {
+  const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8 px-4 text-center">
+          <h1 className="text-2xl font-bold mb-4">Please sign in to view your profile</h1>
+          <Button asChild>
+            <Link to="/auth">Sign In</Link>
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -72,15 +136,30 @@ const Profile = () => {
               <CardHeader className="text-center pb-2">
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-r from-nayidisha-blue to-nayidisha-blue-700 flex items-center justify-center text-white text-3xl font-bold">
-                      RS
-                    </div>
-                    <button className="absolute bottom-0 right-0 bg-nayidisha-blue text-white p-1 rounded-full hover:bg-nayidisha-blue-600">
-                      <Edit size={14} />
-                    </button>
+                    {profileData.profile_image ? (
+                      <img 
+                        src={profileData.profile_image} 
+                        alt="Profile" 
+                        className="w-24 h-24 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-r from-nayidisha-blue to-nayidisha-blue-700 flex items-center justify-center text-white text-3xl font-bold">
+                        {profileData.full_name ? profileData.full_name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                    <FileUpload
+                      onFileUploaded={handleProfileImageUpload}
+                      acceptedTypes=".jpg,.jpeg,.png,.webp"
+                      folder="profile-images"
+                      className="absolute bottom-0 right-0"
+                    >
+                      <Button size="sm" className="h-6 w-6 p-0 rounded-full bg-nayidisha-blue">
+                        <Camera className="h-3 w-3" />
+                      </Button>
+                    </FileUpload>
                   </div>
                 </div>
-                <CardTitle className="text-xl">Rahul Singh</CardTitle>
+                <CardTitle className="text-xl">{profileData.full_name || 'Your Name'}</CardTitle>
                 <CardDescription className="flex items-center justify-center gap-1">
                   <MapPin size={14} />
                   <span>New Delhi, India</span>
@@ -102,32 +181,68 @@ const Profile = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Phone size={16} className="text-muted-foreground" />
-                      <span className="text-sm">+91 98765 43210</span>
+                      <span className="text-sm">{profileData.phone_number || 'Add phone number'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail size={16} className="text-muted-foreground" />
-                      <span className="text-sm">rahul.singh@example.com</span>
+                      <span className="text-sm">{profileData.email}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <User size={16} className="text-muted-foreground" />
-                      <span className="text-sm">Electrician, 5 Years Exp.</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} className="text-muted-foreground" />
-                      <span className="text-sm">Available Immediately</span>
+                      <span className="text-sm">{profile?.is_employer ? 'Employer' : 'Job Seeker'}</span>
                     </div>
                   </div>
                   
                   <Separator />
                   
                   <div className="space-y-3">
-                    <p className="text-sm font-medium">Top Skills</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="bg-muted/50">Electrical Wiring</Badge>
-                      <Badge variant="outline" className="bg-muted/50">Circuit Repair</Badge>
-                      <Badge variant="outline" className="bg-muted/50">Industrial</Badge>
+                    <p className="text-sm font-medium">Quick Upload</p>
+                    <div className="space-y-2">
+                      <FileUpload
+                        onFileUploaded={handleDocumentUpload}
+                        acceptedTypes=".pdf,.doc,.docx"
+                        folder="documents"
+                      >
+                        <Button variant="outline" size="sm" className="w-full justify-start">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Upload Resume
+                        </Button>
+                      </FileUpload>
+                      
+                      <FileUpload
+                        onFileUploaded={handleDocumentUpload}
+                        acceptedTypes=".pdf,.jpg,.jpeg,.png"
+                        folder="certificates"
+                      >
+                        <Button variant="outline" size="sm" className="w-full justify-start">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload Certificate
+                        </Button>
+                      </FileUpload>
                     </div>
                   </div>
+                  
+                  {uploadedDocuments.length > 0 && (
+                    <>
+                      <Separator />
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Recent Uploads</p>
+                        {uploadedDocuments.slice(-3).map((doc, index) => (
+                          <div key={index} className="flex items-center justify-between text-xs">
+                            <span className="truncate">{doc.name}</span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0"
+                              onClick={() => window.open(doc.url, '_blank')}
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                   
                   <Separator />
                   
@@ -186,7 +301,8 @@ const Profile = () => {
                     </Label>
                     <Input 
                       id="fullName" 
-                      defaultValue="Rahul Singh" 
+                      value={profileData.full_name}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
                       disabled={!isEditing}
                     />
                   </div>
@@ -198,19 +314,8 @@ const Profile = () => {
                     </Label>
                     <Input 
                       id="phone" 
-                      defaultValue="+91 98765 43210" 
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="alternatePhone" className="flex items-center gap-2">
-                      <Smartphone size={14} className="text-muted-foreground" />
-                      Alternate Phone (Optional)
-                    </Label>
-                    <Input 
-                      id="alternatePhone" 
-                      placeholder="Enter alternate phone number" 
+                      value={profileData.phone_number}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, phone_number: e.target.value }))}
                       disabled={!isEditing}
                     />
                   </div>
@@ -222,7 +327,19 @@ const Profile = () => {
                     </Label>
                     <Input 
                       id="email" 
-                      defaultValue="rahul.singh@example.com" 
+                      value={profileData.email}
+                      disabled={true}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="alternatePhone" className="flex items-center gap-2">
+                      <Smartphone size={14} className="text-muted-foreground" />
+                      Alternate Phone (Optional)
+                    </Label>
+                    <Input 
+                      id="alternatePhone" 
+                      placeholder="Enter alternate phone number" 
                       disabled={!isEditing}
                     />
                   </div>
@@ -365,7 +482,7 @@ const Profile = () => {
   );
 };
 
-const ProfileCompletionBadge = ({ completion }) => {
+const ProfileCompletionBadge = ({ completion }: { completion: number }) => {
   let status = "Incomplete";
   let color = "bg-amber-500";
   
