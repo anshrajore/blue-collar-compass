@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -96,10 +95,16 @@ export const sendApplicationNotification = async (
         }
       });
     }
-
+    // TODO: Implement backend notification for production (e.g. send email/SMS)
     console.log(`New application for ${jobTitle} from ${applicantName} (${applicantPhone})`);
-    
   } catch (error) {
     console.error('Error sending application notification:', error);
   }
 };
+
+/**
+ * Checks if a value is a valid UUID.
+ */
+export function isValidUUID(uuid: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+}

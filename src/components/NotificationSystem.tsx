@@ -53,12 +53,13 @@ const NotificationSystem: React.FC = () => {
   };
 
   const markAsRead = (notificationId: string) => {
+    // Notification IDs are random strings (not numbers like "1").
     const updated = notifications.map(n => 
       n.id === notificationId ? { ...n, read: true } : n
     );
     setNotifications(updated);
     saveNotifications(updated);
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setUnreadCount(updated.filter(n => !n.read).length);
   };
 
   const markAllAsRead = () => {
@@ -75,11 +76,10 @@ const NotificationSystem: React.FC = () => {
       created_at: new Date().toISOString(),
       read: false
     };
-    
     const updated = [newNotification, ...notifications.slice(0, 9)];
     setNotifications(updated);
     saveNotifications(updated);
-    setUnreadCount(prev => prev + 1);
+    setUnreadCount(updated.filter(n => !n.read).length);
   };
 
   const formatTime = (timestamp: string) => {
