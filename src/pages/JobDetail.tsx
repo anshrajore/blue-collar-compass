@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -9,21 +10,11 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { JobProps } from '@/components/JobCard';
 import { Calendar, MapPin, Building, Share2, Heart, AlertCircle } from 'lucide-react';
 
-// Define the JobDetailProps locally:
-type JobDetailProps = {
-  id: string;
-  title: string;
-  company_name: string;
-  location_city: string;
-  location_state: string;
-  salary: string;
-  postedDate: string;
-  jobType: string;
-  category: string;
-  is_urgent?: boolean;
-  is_verified?: boolean;
+// Mock data for job details (extending the JobProps)
+interface JobDetailProps extends JobProps {
   description: string;
   responsibilities: string[];
   requirements: string[];
@@ -32,21 +23,20 @@ type JobDetailProps = {
   contactPerson?: string;
   contactEmail?: string;
   contactPhone?: string;
-};
+}
 
 const jobDetails: Record<string, JobDetailProps> = {
   '1': {
     id: '1',
     title: 'Plumber for Residential Project',
-    company_name: 'BrightBuild Construction',
-    location_city: 'Delhi',
-    location_state: 'India',
+    company: 'BrightBuild Construction',
+    location: 'Delhi, India',
     salary: '15,000 - 20,000/month',
     postedDate: '2 days ago',
     jobType: 'Full-time',
     category: 'Plumbing',
-    is_urgent: true,
-    is_verified: true,
+    isUrgent: true,
+    isVerified: true,
     description: 'We are seeking a skilled plumber to join our residential project team. The ideal candidate will have experience in installing and repairing plumbing systems in residential buildings. This is a full-time position with competitive pay and benefits.',
     responsibilities: [
       'Install, repair, and maintain plumbing systems and fixtures',
@@ -79,14 +69,13 @@ const jobDetails: Record<string, JobDetailProps> = {
   '2': {
     id: '2',
     title: 'Experienced Electrician',
-    company_name: 'PowerTech Solutions',
-    location_city: 'Mumbai',
-    location_state: 'Maharashtra',
+    company: 'PowerTech Solutions',
+    location: 'Mumbai, Maharashtra',
     salary: '18,000 - 25,000/month',
     postedDate: '1 day ago',
     jobType: 'Full-time',
     category: 'Electrical',
-    is_verified: true,
+    isVerified: true,
     description: 'PowerTech Solutions is looking for an experienced electrician to join our team. The successful candidate will be responsible for installing, maintaining, and repairing electrical systems in commercial and residential buildings.',
     responsibilities: [
       'Install, maintain, and repair electrical systems',
@@ -114,7 +103,7 @@ const jobDetails: Record<string, JobDetailProps> = {
     contactEmail: 'careers@powertech.com',
     contactPhone: '+91 9876543211',
   },
-  // Add more jobs as needed.
+  // More job details can be added here
 };
 
 const JobDetail = () => {
@@ -165,7 +154,7 @@ const JobDetail = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <h1 className="text-2xl font-bold">{job.title}</h1>
-                    {job.is_urgent && (
+                    {job.isUrgent && (
                       <Badge variant="outline" className="bg-nayidisha-orange/10 text-nayidisha-orange border-nayidisha-orange">
                         Urgent
                       </Badge>
@@ -173,8 +162,8 @@ const JobDetail = () => {
                   </div>
                   <div className="flex items-center text-muted-foreground mb-4">
                     <Building size={16} className="mr-1" />
-                    <span className="mr-4">{job.company_name}</span>
-                    {job.is_verified && (
+                    <span className="mr-4">{job.company}</span>
+                    {job.isVerified && (
                       <span className="flex items-center text-nayidisha-blue text-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
                         <span className="ml-1">Verified Employer</span>
@@ -184,7 +173,7 @@ const JobDetail = () => {
                   <div className="flex flex-wrap gap-4">
                     <div className="flex items-center text-muted-foreground">
                       <MapPin size={16} className="mr-1" />
-                      <span>{job.location_city}, {job.location_state}</span>
+                      <span>{job.location}</span>
                     </div>
                     <div className="flex items-center text-muted-foreground">
                       <Calendar size={16} className="mr-1" />
@@ -253,6 +242,7 @@ const JobDetail = () => {
             <Card>
               <CardContent className="p-6 space-y-4">
                 <h2 className="text-xl font-semibold mb-2">Job Summary</h2>
+                
                 <div className="grid grid-cols-2 gap-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Salary</p>
@@ -283,8 +273,8 @@ const JobDetail = () => {
               <CardContent className="p-6 space-y-4">
                 <h2 className="text-xl font-semibold mb-2">Company Information</h2>
                 <div className="space-y-3">
-                  <p className="font-medium">{job.company_name}</p>
-                  <p className="text-muted-foreground text-sm">{job.location_city}, {job.location_state}</p>
+                  <p className="font-medium">{job.company}</p>
+                  <p className="text-muted-foreground text-sm">{job.location}</p>
                   <div className="pt-2">
                     <Button variant="outline" className="w-full">
                       View Company Profile
@@ -337,7 +327,7 @@ const JobDetail = () => {
                       >
                         <h3 className="font-medium mb-1">{similarJob.title}</h3>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">{similarJob.company_name}</span>
+                          <span className="text-muted-foreground">{similarJob.company}</span>
                           <span className="font-medium text-nayidisha-blue">₹{similarJob.salary.split(' ')[0]}</span>
                         </div>
                       </Link>

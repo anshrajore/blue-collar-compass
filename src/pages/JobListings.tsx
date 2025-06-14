@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import SearchBar from '@/components/SearchBar';
 import FilterSidebar from '@/components/FilterSidebar';
-import JobCard from "@/components/JobCard";
+import JobCard, { JobProps } from '@/components/JobCard';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -31,8 +31,8 @@ const JobListings = () => {
   const { user, profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
-  const [filteredJobs, setFilteredJobs] = useState([]);
-  const [allJobs, setAllJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState<JobProps[]>([]);
+  const [allJobs, setAllJobs] = useState<JobProps[]>([]);
   const [sortBy, setSortBy] = useState('recent');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLoading, setIsLoading] = useState(true);
@@ -123,7 +123,7 @@ const JobListings = () => {
       if (error) throw error;
 
       if (data) {
-        const formattedJobs = data.map(job => ({
+        const formattedJobs: JobProps[] = data.map(job => ({
           id: job.id,
           title: job.title,
           company: job.company_name || 'Unknown Company',
